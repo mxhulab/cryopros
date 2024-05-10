@@ -67,20 +67,31 @@ This should display the help information for cryoPROS, indicating a successful i
 
 # Tutorial
 
-## Training the deep generative neural network that generates auxiliary particles.
+CryoPROS consists of five executable submodule binaries, as listed in the following table:
 
-[TBD]
+| binary name | category | purpose | options/argument |
+| ------------ |--------- | --------- | --------------- |
+| `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | |
+| `cryopros-generate` | core | Generating auxiliary particles | |
+| `cryopros-uniform-pose` | utility | | |
+| `cryopros-gen-mask` | utility | | |
+| `cryopros--recondismic` | optional | | |
 
-## Generating auxiliary particles
-
-[TBD]
-
-## Co-refining
-
-[TBD]
+Using cryoPROS to address the preferred orientation issue in single-particle cryo-EM involves integrating these submodules with other cryo-EM software, such as Relion, CryoSPARC, and cryoDRGN. This integration is user-defined and can be customized based on different datasets. To demonstrate the effectiveness of cryoPROS, case studies are provided.
 
 # Options/Arguments
 
-## Options/Arguments of `cryopros-generate`
+## Options/Arguments of `cryopros-train`
+[TBD]
 
+## Options/Arguments of `cryopros-generate`
+[TBD]
+
+## Options/Arguments of `cryopros-uniform-pose`
+[TBD]
+
+## Options/Arguments of `cryopros-gen-mask`
+[TBD]
+
+## Options/Arguments of ``cryopros--recondismic`
 [TBD]
