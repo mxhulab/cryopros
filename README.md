@@ -28,8 +28,6 @@ CryoPROS is free software developed in Python and is available as a Python packa
 
 ## Preparation of CUDA Environment
 
-Here's a clearer version for your GitHub README:
-
 ### Creating and activating a Conda virtual environment
 
 First, create a Conda virtual environment named `CRYOPROS_ENV` with Python 3.10 by running the following command:
@@ -49,4 +47,6 @@ pip install torch=={x.x.x} torchvision=={x.x.x} --extra-index-url https://downlo
 ```
 
 ## Installing cryoPROS
-
+```
+pip install cryoPROS-linux_x86_64.whl
+```
