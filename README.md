@@ -40,10 +40,17 @@ After creating the environment, activate it using:
 conda activate CRYOPROS_ENV
 ```
 
-### Installing PyTorch
-Install the appropriate versions of PyTorch and torchvision based on your environment, specifically the CUDA Driver Version.
+### Installing PyTorch and torchvision
+
+Install the versions of PyTorch and torchvision that correspond to your specific environment, particularly matching your CUDA Driver Version. Use the following command, replacing `{x.x.x}` with the appropriate version numbers and `{xxx}` with your CUDA version:
+
 ```
 pip install torch=={x.x.x} torchvision=={x.x.x} --extra-index-url https://download.pytorch.org/whl/cu{xxx}
+```
+
+For example, to install PyTorch 1.11.0 and torchvision 0.12.0 for CUDA Driver 10.2, you would use:
+```
+pip install torch==1.11.0+cu102 torchvision==0.12.0+cu102 --extra-index-url https://download.pytorch.org/whl/cu102
 ```
 
 ## Installing cryoPROS
