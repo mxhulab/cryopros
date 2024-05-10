@@ -55,5 +55,32 @@ pip install torch==1.11.0+cu102 torchvision==0.12.0+cu102 --extra-index-url http
 
 ## Installing cryoPROS
 ```
-pip install cryoPROS-linux_x86_64.whl
+pip install cryoPROS-1.3-cp310-cp310-linux_x86_64.whl
 ```
+
+## Verifying Installation
+You can verify whether cryoPROS has been installed successfully by running the following command:
+```
+cryopros-generate -h
+```
+This should display the help information for cryoPROS, indicating a successful installation.
+
+# Tutorial
+
+## Training the deep generative neural network that generates auxiliary particles.
+
+[TBD]
+
+## Generating auxiliary particles
+
+[TBD]
+
+## Co-refining
+
+[TBD]
+
+# Options/Arguments
+
+## Options/Arguments of `cryopros-generate`
+
+[TBD]
