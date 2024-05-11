@@ -69,7 +69,7 @@ This should display the help information for cryoPROS, indicating a successful i
 
 ## Scheme work of cryoPROS
 
-![workflow](images/workflow.pdf)
+![workflow](images/workflow.jpg)
 
 CryoPROS consists of five executable submodule binaries, as listed in the following table:
 
