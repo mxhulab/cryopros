@@ -81,13 +81,13 @@ CryoPROS consists of five executable binaries, as listed in the following table:
 | ------------ |--------- | --------- | --------------- |
 | `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | |
 | `cryopros-generate` | core | Generating auxiliary particles. | |
-| `cryopros-uniform-pose` | utility | | |
+| `cryopros-uniform-pose` | utility | | [see](#cryopros-uniform-pos) |
 | `cryopros-gen-mask` | utility | | |
 | `cryopros--recondismic` | optional | | |
 
 ## Integrating CryoPROS's Executable Binaries with Cryo-EM Softwares to Address Preferred Orientation Challenges
 
-Using cryoPROS to address the preferred orientation issue in single-particle cryo-EM involves integrating these submodules with other cryo-EM software, such as Relion, CryoSPARC, and cryoDRGN. This integration is user-defined and can be customized based on different datasets. To demonstrate the effectiveness of cryoPROS, case studies are provided.
+Using cryoPROS to address the preferred orientation issue in single-particle cryo-EM involves integrating these submodules with other cryo-EM software, such as Relion, CryoSPARC, EMReady and cryoDRGN. This integration is user-defined and can be customized based on different datasets. To demonstrate the effectiveness of cryoPROS, case studies are provided.
 
 ## Case Study: Achieving 3.49Å Resolution for an Untitled HA-Trimer (EMPIAR-10096)
 
@@ -99,11 +99,12 @@ Using cryoPROS to address the preferred orientation issue in single-particle cry
 ## Options/Arguments of `cryopros-generate`
 [TBD]
 
+<a name="cryopros-uniform-pose"></a>
 ## Options/Arguments of `cryopros-uniform-pose`
 [TBD]
 
 ## Options/Arguments of `cryopros-gen-mask`
 [TBD]
 
-## Options/Arguments of ``cryopros--recondismic`
+## Options/Arguments of `cryopros--recondismic`
 [TBD]
