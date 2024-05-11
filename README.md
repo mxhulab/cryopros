@@ -79,11 +79,11 @@ CryoPROS consists of five executable binaries, as listed in the following table:
 
 | binary name | category | purpose | options/argument |
 | ------------ |--------- | --------- | --------------- |
-| `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | |
-| `cryopros-generate` | core | Generating auxiliary particles. | |
+| `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | [see](#optionsarguments-of-cryopros-train) |
+| `cryopros-generate` | core | Generating auxiliary particles. | [see](#optionsarguments-of-cryopros-generate) |
 | `cryopros-uniform-pose` | utility | | [see](#optionsarguments-of-cryopros-uniform-pose) |
-| `cryopros-gen-mask` | utility | | |
-| `cryopros--recondismic` | optional | | |
+| `cryopros-gen-mask` | utility | | [see](#optionsarguments-of-cryopros-gen-mask) |
+| `cryopros-recondismic` | optional | | [see](#optionsarguments-of-cryopros-recondismic) |
 
 ## Integrating CryoPROS's Executable Binaries with Cryo-EM Softwares to Address Preferred Orientation Challenges
 
