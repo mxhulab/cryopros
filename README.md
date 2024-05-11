@@ -28,7 +28,7 @@ CryoPROS is free software developed in Python and is available as a Python packa
 
 ## Preparation of CUDA Environment
 
-### Creating and activating a Conda virtual environment
+### Creating and Activating a Conda Virtual Environment
 
 First, create a Conda virtual environment named `CRYOPROS_ENV` with Python 3.10 by running the following command:
 ```
@@ -40,7 +40,7 @@ After creating the environment, activate it using:
 conda activate CRYOPROS_ENV
 ```
 
-### Installing PyTorch and torchvision
+### Installing PyTorch and Torchvision
 
 Install the versions of PyTorch and torchvision that correspond to your specific environment, particularly matching your CUDA Driver Version. Use the following command, replacing `{x.x.x}` with the appropriate version numbers and `{xxx}` with your CUDA version:
 
@@ -53,7 +53,7 @@ For example, to install PyTorch 1.11.0 and torchvision 0.12.0 for CUDA Driver 10
 pip install torch==1.11.0+cu102 torchvision==0.12.0+cu102 --extra-index-url https://download.pytorch.org/whl/cu102
 ```
 
-## Installing cryoPROS
+## Installing CryoPROS
 ```
 pip install cryoPROS-1.3-cp310-cp310-linux_x86_64.whl
 ```
@@ -67,21 +67,29 @@ This should display the help information for cryoPROS, indicating a successful i
 
 # Tutorial
 
-## Scheme work of cryoPROS
+## Workflow Diagram of CryoPROS
 
 ![workflow](images/workflow.jpg)
 
-CryoPROS consists of five executable submodule binaries, as listed in the following table:
+CryoPROS is composed of two primary modules: the generative module and the co-refinement module, and includes an optional sub-module for heterogeneous reconstruction.
+
+## Five Executable Binaries Included in CryoPROS
+
+CryoPROS consists of five executable binaries, as listed in the following table:
 
 | binary name | category | purpose | options/argument |
 | ------------ |--------- | --------- | --------------- |
 | `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | |
-| `cryopros-generate` | core | Generating auxiliary particles | |
+| `cryopros-generate` | core | Generating auxiliary particles. | |
 | `cryopros-uniform-pose` | utility | | |
 | `cryopros-gen-mask` | utility | | |
 | `cryopros--recondismic` | optional | | |
 
+## Integrating CryoPROS's Executable Binaries with Cryo-EM Softwares to Address Preferred Orientation Challenges
+
 Using cryoPROS to address the preferred orientation issue in single-particle cryo-EM involves integrating these submodules with other cryo-EM software, such as Relion, CryoSPARC, and cryoDRGN. This integration is user-defined and can be customized based on different datasets. To demonstrate the effectiveness of cryoPROS, case studies are provided.
+
+## Case Study: Achieving 3.49Å Resolution for an Untitled HA-Trimer (EMPIAR-10096)
 
 # Options/Arguments
 
