@@ -81,7 +81,7 @@ CryoPROS consists of five executable binaries, as listed in the following table:
 | ------------ |--------- | --------- | --------------- |
 | `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | |
 | `cryopros-generate` | core | Generating auxiliary particles. | |
-| `cryopros-uniform-pose` | utility | | [see](#cryopros-uniform-pos) |
+| `cryopros-uniform-pose` | utility | | [see](#optionsarguments-of-cryopros-uniform-pose) |
 | `cryopros-gen-mask` | utility | | |
 | `cryopros--recondismic` | optional | | |
 
