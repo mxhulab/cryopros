@@ -91,6 +91,19 @@ Using cryoPROS to address the preferred orientation issue in single-particle cry
 
 ## Case Study: Achieving 3.49Å Resolution for an Untitled HA-Trimer (EMPIAR-10096)
 
+### Step 1: Download Untitled HA-Trimer Dataset (EMPIAR-10096)
+
+Download [EMPIAR-10096 (~32GB)](https://ftp.ebi.ac.uk/empiar/world_availability/10096/data/Particle-Stack/).
+You can download it directly from the command line: 
+```
+wget -nH -m ftp://ftp.ebi.ac.uk/empiar/world_availability/10096/data/Particle-Stack/
+```
+This dataset contains 130,000 extracted particles with box size of 256 and pixel size of 1.31Å/pix.
+
+![dataset](./images/HAtrimer/dataset.png "Dataset")
+
+The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equalized_run-data.star`.
+
 # Options/Arguments
 
 <a name="cryopros-train"></a>
