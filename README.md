@@ -80,7 +80,7 @@ CryoPROS consists of five executable binaries, as listed in the following table:
 | binary name | category | purpose | options/argument |
 | ------------ |--------- | --------- | --------------- |
 | `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | [see](#optionsarguments-of-cryopros-train) |
-| `cryopros-generate` | core | Generating auxiliary particles. | [see](#optionsarguments-of-cryopros-generate) |
+| `cryopros-generate` | core | Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model. | [see](#optionsarguments-of-cryopros-generate) |
 | `cryopros-uniform-pose` | utility | Replacing poses in the input star file with poses sampled from a uniform distribution of spatial rotations. | [see](#optionsarguments-of-cryopros-uniform-pose) |
 | `cryopros-gen-mask` | utility | Generating a volume mask for a given input volume and corresponding threshold. | [see](#optionsarguments-of-cryopros-gen-mask) |
 | `cryopros-recondismic` | optional | | [see](#optionsarguments-of-cryopros-recondismic) |
@@ -114,7 +114,34 @@ The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equal
 <a name="cryopros-generate"></a>
 ## Options/Arguments of `cryopros-generate`
 
-[TBD]
+```
+$ cryopros-generate -h
+usage: cryopros-generate [-h] --model_path MODEL_PATH --output_path OUTPUT_PATH --box_size BOX_SIZE --Apix APIX --gen_name GEN_NAME --param_path
+                              PARAM_PATH [--invert] [--batch_size BATCH_SIZE] [--num_max NUM_MAX] [--data_scale DATA_SCALE] [--gen_mode GEN_MODE]
+                              [--nls NLS [NLS ...]]
+
+Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model.
+
+options:
+  -h, --help            show this help message and exit
+  --model_path MODEL_PATH
+                        input pretrained model path
+  --output_path OUTPUT_PATH
+                        output output synthesized auxiliary particle stack
+  --box_size BOX_SIZE   box size
+  --Apix APIX           pixel size in Angstrom
+  --gen_name GEN_NAME   filename of the generated auxiliary particle stack
+  --param_path PARAM_PATH
+                        path of star file which contains the imaging parameters
+  --invert              invert the image sign
+  --batch_size BATCH_SIZE
+                        batch size
+  --num_max NUM_MAX     maximum number particles to generate
+  --data_scale DATA_SCALE
+                        scale factor
+  --gen_mode GEN_MODE   storage model of the synthesized particles; mode 0 is int; mode 2 is float
+  --nls NLS [NLS ...]   number of layers of the neural network
+```
 
 <a name="cryopros-uniform-pose"></a>
 ## Options/Arguments of `cryopros-uniform-pose`
