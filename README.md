@@ -79,7 +79,7 @@ CryoPROS consists of five executable binaries, as listed in the following table:
 
 | binary name | category | purpose | options/argument |
 | ------------ |--------- | --------- | --------------- |
-| `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | [see](#optionsarguments-of-cryopros-train) |
+| `cryopros-train ` | core | Training a conditional VAE deep neural network model from an input initial volume and raw particles with given imaging parameters. | [see](#optionsarguments-of-cryopros-train) |
 | `cryopros-generate` | core | Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model. | [see](#optionsarguments-of-cryopros-generate) |
 | `cryopros-uniform-pose` | utility | Replacing poses in the input star file with poses sampled from a uniform distribution of spatial rotations. | [see](#optionsarguments-of-cryopros-uniform-pose) |
 | `cryopros-gen-mask` | utility | Generating a volume mask for a given input volume and corresponding threshold. | [see](#optionsarguments-of-cryopros-gen-mask) |
@@ -109,7 +109,45 @@ The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equal
 <a name="cryopros-train"></a>
 ## Options/Arguments of `cryopros-train`
 
-[TBD]
+```
+$ cryopros-train -h
+usage: cryopros-train [-h] --box_size BOX_SIZE --Apix APIX --init_volume_path INIT_VOLUME_PATH --data_path
+                     DATA_PATH --param_path PARAM_PATH --gpu_ids GPU_IDS [GPU_IDS ...] [--invert] [-opt OPT]
+                     [--task_name TASK_NAME] [--volume_scale VOLUME_SCALE]
+                     [--dataloader_batch_size DATALOADER_BATCH_SIZE]
+                     [--dataloader_num_workers DATALOADER_NUM_WORKERS] [--lr LR] [--KL_weight KL_WEIGHT]
+                     [--max_iter MAX_ITER]
+
+Training a conditional VAE deep neural network model from an input initial volume and raw particles with given
+imaging parameters.
+
+options:
+  -h, --help            show this help message and exit
+  --box_size BOX_SIZE   box size
+  --Apix APIX           pixel size in Angstrom
+  --init_volume_path INIT_VOLUME_PATH
+                        input inital volume path
+  --data_path DATA_PATH
+                        input raw particles path
+  --param_path PARAM_PATH
+                        path of star file which contains the imaging parameters
+  --gpu_ids GPU_IDS [GPU_IDS ...]
+                        GPU IDs to utilize
+  --invert              invert the image sign
+  -opt OPT              path to option JSON file
+  --task_name TASK_NAME
+                        task name
+  --volume_scale VOLUME_SCALE
+                        scale factor
+  --dataloader_batch_size DATALOADER_BATCH_SIZE
+                        batch size to load data
+  --dataloader_num_workers DATALOADER_NUM_WORKERS
+                        number of workers to load data
+  --lr LR               learning rate
+  --KL_weight KL_WEIGHT
+                        KL weight
+  --max_iter MAX_ITER   max number of iterations
+```
 
 <a name="cryopros-generate"></a>
 ## Options/Arguments of `cryopros-generate`
