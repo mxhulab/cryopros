@@ -119,7 +119,17 @@ The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equal
 <a name="cryopros-uniform-pose"></a>
 ## Options/Arguments of `cryopros-uniform-pose`
 
-[TBD]
+```
+$ cryopros-uniform-pose -h
+usage: cryopros-uniform-pose [-h] --input INPUT --output OUTPUT
+
+Replacing poses in the input star file with poses sampled from a uniform distribution of spatial rotations.
+
+options:
+  -h, --help       show this help message and exit
+  --input INPUT    input star file filename
+  --output OUTPUT  output star file filename
+```
 
 <a name="cryopros-gen-mask"></a>
 ## Options/Arguments of `cryopros-gen-mask`
