@@ -134,7 +134,7 @@ options:
   --gpu_ids GPU_IDS [GPU_IDS ...]
                         GPU IDs to utilize
   --invert              invert the image sign
-  -opt OPT              path to option JSON file
+  --opt OPT              path to option JSON file
   --task_name TASK_NAME
                         task name
   --volume_scale VOLUME_SCALE
