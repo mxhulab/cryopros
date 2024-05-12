@@ -82,7 +82,7 @@ CryoPROS consists of five executable binaries, as listed in the following table:
 | `cryopros-train ` | core |Training the deep generative neural network that generates auxiliary particles. | [see](#optionsarguments-of-cryopros-train) |
 | `cryopros-generate` | core | Generating auxiliary particles. | [see](#optionsarguments-of-cryopros-generate) |
 | `cryopros-uniform-pose` | utility | Replacing poses in the input star file with poses sampled from a uniform distribution of spatial rotations. | [see](#optionsarguments-of-cryopros-uniform-pose) |
-| `cryopros-gen-mask` | utility | | [see](#optionsarguments-of-cryopros-gen-mask) |
+| `cryopros-gen-mask` | utility | Generating a volume mask for a given input volume and corresponding threshold. | [see](#optionsarguments-of-cryopros-gen-mask) |
 | `cryopros-recondismic` | optional | | [see](#optionsarguments-of-cryopros-recondismic) |
 
 ## Integrating CryoPROS's Executable Binaries with Cryo-EM Softwares to Address Preferred Orientation Challenges
@@ -134,7 +134,20 @@ options:
 <a name="cryopros-gen-mask"></a>
 ## Options/Arguments of `cryopros-gen-mask`
 
-[TBD]
+```
+$ cryopros-gen-mask -h
+usage: cryopros-gen-mask [-h] [-h] --volume_path VOLUME_PATH --result_path RESULT_PATH --threshold THRESHOLD
+
+Generating a volume mask for a given input volume and corresponding threshold.
+
+options:
+  -h, --help            show this help message and exit
+  --volume_path VOLUME_PATH
+                        input volume path
+  --result_path RESULT_PATH
+                        output mask path
+  --threshold THRESHOLD
+```
 
 <a name="cryopros-recondismic"></a>
 ## Options/Arguments of `cryopros-recondismic`
