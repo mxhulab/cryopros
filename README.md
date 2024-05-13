@@ -216,13 +216,101 @@ After completing the co-refinement, use the **Particle Sets Tool** in cryoSPARC 
 
 ![J2581](./images/ha_trimer/J2581.png "J2581")
 
-Next, export the poses of the raw particles as a star file by exporting the cryoSPARC job and using the csparc2star.py script from the pyem package.
+Next, export the poses of the raw particles as a star file (`2581.star`) by exporting the cryoSPARC job and using the `csparc2star.py` script from the pyem package.
 
 The expected result (`2581.star`) can be downloaded from [this link](https://drive.google.com/drive/folders/1t_NYeR_CAbMq8OWZchIbXf8UND2wrrkt?usp=sharing).
 
+Then, execute **Homogeneous Reconstruction Only** task on raw particles subset. The expected density map (`cryosparc_P68_J2581_volume_map_sharp.mrc`) can be download from [this link](https://drive.google.com/drive/folders/1t_NYeR_CAbMq8OWZchIbXf8UND2wrrkt?usp=sharing).
+
+Finally, Use Relion to generate the subset stack (`raw_iter_2.mrcs`) by this command:
+```
+relion_stack_create --i 2581.star --o raw_iter2
+```
+
 ### Step 8: Iteration 2: Train the neural network in the generative module
 
+The training process follows the approach outlined in **Step 4**.
+
+```
+cryopros-train \
+--opt {CONDA_ENV_PATH}/lib/python3.12/site-packages/cryoPROS/options/train.json \
+--gpu_ids 0 1 2 3 \
+--task_name HAtrimer_iteration_2 \
+--box_size 256 \
+--Apix 1.31 \
+--volume_scale 50 \
+--cryosparc_P68_J2581_volume_map_sharp.mrc \
+--data_path raw_iter_2.mrcs \
+--param_path 2581.star \
+--invert \
+--dataloader_batch_size 8
+```
+
+Upon completion of the above command:
+- A directory named `./generate/HAtrimer_iteration_2` will be created.
+- The training log will be stored at `./generate/HAtrimer_iteration_2/train.log`.
+- The trained neural networks will be saved under `./generate/HAtrimer_iteration_2/models/`.
+
+The expected trained neural network (`HAtrimer_iteration_2.pth`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
+
 ### Step 9: Iteration 2: Generate auxiliary particles with the trained neural network
+
+The generating process follows the approach outlined in **Step 5**.
+
+```
+cryopros-generate \
+--model_path HAtrimer_iteration_2.pth \
+--output_path generated_HAtrimer_iteration_2/ \
+--gen_name HAtrimer_iteration_2_generated_particles.mrcs \
+--batch_size 50 \
+--box_size 256 \
+--Apix 1.31 \
+--param_path unipose.star \
+--invert \
+--gen_mode 0 \
+```
+
+Generated auxiliary particles are output in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.mrcs`.
+
+### Step 10: Iteration 2: Co-refinement using a combination of raw particles and synthesized auxiliary particles
+
+The co-refinement process is identical to that described in **Step 6**, with the only difference being the use of the auxiliary particle stack `HAtrimer_iteration_2_generated_particles.mrcs` instead of `HAtrimer_iteration_1_generated_particles.mrcs`.
+
+### Step 11: Iteration 2: Reconstruction-only with raw particles and their pose esimated in the co-refinement step
+
+This step mirrors **Step 7**, with the exception that the optional 2D classification followed by selection is omitted.
+
+The expected result, consisting of poses of raw particles obtained from the second iteration co-refinement and named `2596.star`, can be downloaded from [this link](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing).
+
+The expected density map (`cryosparc_P68_J2599_volume_map_sharp.mrc`) can be downloaded from [this link](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing).
+
+### Step 12: Post-processing by EMReady
+
+Install [EMReady](http://huanglab.phys.hust.edu.cn/EMReady/v2.0/EMReady_v2.0.tgz) by following the instructions provided.
+
+Next, postprocess the density map obtained in the previous step using the following command:
+```
+EMReady.sh cryosparc_P68_J2599_volume_map_sharp.mrc 2599_refined.mrc
+relion_image_handler --i 2599_refined.mrc --o 2599_refined.mrc --new_box 256 --rescale_angpix 1.31
+```
+
+The expected refined density map ('2599_refined.mrc') can be downloaded from [this link](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing).
+
+### Step 13: Local Refinement
+
+This step involves performing local refinement on a subset of particles that exhibit relatively balanced poses:
+
+Firstly, conduct a 2D classification of the raw particles using the [`2596.star`](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing) file. Manually select a subset of particles with balanced poses, such as those in [`2599_subset.star`](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing), which contains 31,146 particles.
+
+Then, perform a **Homogeneous Reconstruction Only** on this selected subset to obtain a density map and corresponding mask file. The results are available at [cryosparc_P68_J4657_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) and [cryosparc_P68_J4657_volume_mask_fsc.mrc](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) respectively.
+
+Finally, perform a **Local Refinement** task using the following settings:
+- Particle stacks: [`2599_subset.star`](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) file.
+- Initial volume: [`2599_refined.mrc`](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing).
+- Static mask: [cryosparc_P68_J4657_volume_mask_fsc.mrc](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing).
+- Initial lowpass resolution (Å): 4
+- Symmetry: C3
+- Other parameters: default
 
 # Options/Arguments
 
