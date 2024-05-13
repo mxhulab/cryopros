@@ -313,12 +313,12 @@ This step involves performing local refinement on a subset of particles that exh
 
 Firstly, conduct a 2D classification of the raw particles using the [`2596.star`](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing) file. Manually select a subset of particles with balanced poses, such as those in [`2599_subset.star`](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing), which contains 31,146 particles.
 
-Then, perform a **Homogeneous Reconstruction Only** on this selected subset to obtain a density map and corresponding mask file. The results are available at [cryosparc_P68_J4657_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) and [cryosparc_P68_J4657_volume_mask_fsc.mrc](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) respectively.
+Then, perform a **Homogeneous Reconstruction Only** on this selected subset to obtain a density map and corresponding mask file. The results are available at [`cryosparc_P68_J4657_volume_map_sharp.mrc`](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) and [`cryosparc_P68_J4657_volume_mask_fsc.mrc`](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) respectively.
 
 Finally, perform a **Local Refinement** task using the following settings:
 - Particle stacks: [`2599_subset.star`](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) file.
 - Initial volume: [`2599_refined.mrc`](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing).
-- Static mask: [cryosparc_P68_J4657_volume_mask_fsc.mrc](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing).
+- Static mask: [`cryosparc_P68_J4657_volume_mask_fsc.mrc`](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing).
 - Initial lowpass resolution (Å): 4
 - Symmetry: C3
 - Other parameters: default
