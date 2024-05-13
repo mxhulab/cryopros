@@ -54,6 +54,7 @@ pip install torch==1.11.0+cu102 torchvision==0.12.0+cu102 --extra-index-url http
 ```
 
 ## Installing CryoPROS
+Download the precompiled package cryoPROS-1.0-cp312-cp312-linux_x86_64.whl [from the GitHub repository](https://github.com/mxhulab/crypros).
 ```
 pip install cryoPROS-1.0-cp312-cp312-linux_x86_64.whl
 ```
