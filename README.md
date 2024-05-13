@@ -215,7 +215,7 @@ Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HA
 ### Step 6: Iteration 1: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
 Perform **Non-uniform Refinement** in cryoSPARC using a combination of raw particles (`T00_HA_130K-Equalized-Particle-Stack.mrcs`) and synthesized auxiliary particles (`HAtrimer_iteration_1_generated_particles.mrcs`). The parameter settings for this process are:
-- Initial volume: [6idd_align_lp10.mrc](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing).
+- Initial volume: [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing).
 - Symmetry: C3.
 - Other parameters: default.
 
