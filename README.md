@@ -203,7 +203,22 @@ Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HA
 
 ### Step 6: Iteration 1: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
+Perform **Non-uniform Refinement** in cryoSPARC using a combination of raw particles (`T00_HA_130K-Equalized-Particle-Stack.mrcs`) and synthesized auxiliary particles (`HAtrimer_iteration_1_generated_particles.mrcs`). The parameter settings for this process are:
+- Initial volume: [6idd_align_lp10.mrc](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing).
+- Symmetry: C3.
+- Other parameters: default.
+
 ### Step 7: Iteration 1: Reconstruction-only with raw particles and their pose esimated in the co-refinement step
+
+After completing the co-refinement, use the **Particle Sets Tool** in cryoSPARC to separate the raw particles from the combination of raw and synthesized auxiliary particles.
+
+[Optional] Conduct 2D classification of raw particles and manual pick a subset with less top view (62,952 particles).
+
+![J2581](./images/ha_trimer/J2581.png "J2581")
+
+Next, export the poses of the raw particles as a star file by exporting the cryoSPARC job and using the csparc2star.py script from the pyem package.
+
+The expected result (`2581.star`) can be downloaded from [this link](https://drive.google.com/drive/folders/1t_NYeR_CAbMq8OWZchIbXf8UND2wrrkt?usp=sharing).
 
 ### Step 8: Iteration 2: Train the neural network in the generative module
 
