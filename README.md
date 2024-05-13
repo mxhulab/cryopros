@@ -112,7 +112,7 @@ This dataset contains 130,000 extracted particles with box size of 256 and pixel
 
 The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equalized_run-data.star`.
 
-## Step 2: Ab-initio auto-refinement
+### Step 2: Ab-initio auto-refinement
 
 Perform ab-initio auto-refinement:
 - Import the downloaded data into relion and execute the **3D initial model** task.
@@ -130,7 +130,7 @@ python csparc2star.py cryosparc_P68_J379_005_particles.cs autorefinement.star
 ```
 The expected result, `autorefinement.star`, which includes the estimated pose parameters, can be downloaded from [this link](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing).
 
-## Step 3: Generate the initial latent volume
+### Step 3: Generate the initial latent volume
 
 - The initial latent volume is generated using the homologous protein atomic model, selected from PDB ID: 6IDD, specifically chains a, g, and e.
 - Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the following commands in the Chimera command line:
@@ -146,6 +146,18 @@ Finnaly, use Relion to apply low-pass filtering to the aligned volume (6idd_alig
 ```
 relion_image_handler --i 6idd_align.mrc --o 6idd_align_lp10.mrc --lowpass 10
 ```
+
+### Step 4: Iteration 1: Train the neural network in the generative module
+
+### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
+
+### Step 6: Iteration 1: Co-refinement
+
+### Step 7: Iteration 1: Reconstruction-only with raw particles and their pose esimated in the co-refinement step
+
+### Step 8: Iteration 2: Train the neural network in the generative module
+
+### Step 9: Iteration 2: Generate auxiliary particles with the trained neural network
 
 # Options/Arguments
 
