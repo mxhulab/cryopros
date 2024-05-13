@@ -329,7 +329,7 @@ The expected refined density map ('cryosparc_P68_J4826_volume_map_sharp.mrc') ca
 
 This step is identical to **Step 12**.
 
-The expected processed density map ('4826_refined.mrc') can be downloaded from [this link](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing).
+The expected processed density map (`4826_refined.mrc`) can be downloaded from [this link](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing).
 # Options/Arguments
 
 <a name="cryopros-train"></a>
