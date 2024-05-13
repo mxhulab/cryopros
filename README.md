@@ -112,7 +112,7 @@ This dataset contains 130,000 extracted particles with box size of 256 and pixel
 
 The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equalized_run-data.star`.
 
-## Step 2: Ab-initio auto-refinement
+### Step 2: Ab-initio auto-refinement
 
 Perform ab-initio auto-refinement:
 - Import the downloaded data into relion and execute the **3D initial model** task.
@@ -130,7 +130,7 @@ python csparc2star.py cryosparc_P68_J379_005_particles.cs autorefinement.star
 ```
 The expected result, `autorefinement.star`, which includes the estimated pose parameters, can be downloaded from [this link](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing).
 
-## Step 3: Generate the initial latent volume
+### Step 3: Generate the initial latent volume
 
 - The initial latent volume is generated using the homologous protein atomic model, selected from PDB ID: 6IDD, specifically chains a, g, and e.
 - Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the following commands in the Chimera command line:
@@ -142,10 +142,87 @@ save #1 6idd_align.mrc
 <img src="./images/ha_trimer/model_fit.png" width="200px">
 </p>
 
-Finnaly, use Relion to apply low-pass filtering to the aligned volume (6idd_align.mrc), which will generate the initial latent volume [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing) necessary for the first iteration of training in cryoPROS, via the command:
+Finnaly, use Relion to apply low-pass filtering to the aligned volume (6idd_align.mrc), which will generate the initial latent volume `6idd_align_lp10.mrc` necessary for the first iteration of training in cryoPROS, via the command:
 ```
 relion_image_handler --i 6idd_align.mrc --o 6idd_align_lp10.mrc --lowpass 10
 ```
+The expected result, `6idd_align_lp10.mrc`, can be downloaded from [this link](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing).
+
+### Step 4: Iteration 1: Train the neural network in the generative module
+
+The particles `T00_HA_130K-Equalized-Particle-Stack.mrcs` and their refined poses, available at [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), are utilized to train the neural network within the generative module. This training starts with the initial latent volume, which can be accessed at [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing), via command:
+```
+cryopros-train \
+--opt {CONDA_ENV_PATH}/lib/python3.12/site-packages/cryoPROS/options/train.json \
+--gpu_ids 0 1 2 3 \
+--task_name HAtrimer_iteration_1 \
+--box_size 256 \
+--Apix 1.31 \
+--volume_scale 50 \
+--init_volume_path 6idd_align_lp10.mrc \
+--data_path T00_HA_130K-Equalized-Particle-Stack.mrcs \
+--param_path autorefinement.star \
+--invert \
+--dataloader_batch_size 8
+```
+`{CONDA_ENV_PATH}` is the location of the `CRYOPROS_ENV`, the Conda environment created during the installation process. If [Anaconda 3](https://www.anaconda.com) is used to create the Conda environment, then `{CONDA_ENV_PATH}` should be set to `{ANACONDA_INSTALLATION_PATH}/envs/CRYOPROS_ENV`.
+Moreover, 4 GPUs are utilized for training in the aforementioned setting. Adjust the `--gpu_ids` option to accommodate your computing environment.
+
+Upon completion of the above command:
+- A directory named `./generate/HAtrimer_iteration_1` will be created.
+- The training log will be stored at `./generate/HAtrimer_iteration_1/train.log`.
+- The trained neural networks will be saved under `./generate/HAtrimer_iteration_1/models/`.
+
+The expected trained neural network (`HAtrimer_iteration_1.pth`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
+
+### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
+
+Auxiliary particles should display uniform poses. Therefore, the initial phase involves replacing the poses in the input star file, [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), with poses sampled from a uniform distribution of spatial rotations, which can be accomplised via:
+```
+cryopros-uniform-pose \
+--input ./autorefinement.star \
+--ouput ./unipose.star \
+```
+The expected `unipose.star` can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
+
+Next, the auxiliary particles are generated using the neural network that was trained in the preceding step, with the command
+```
+cryopros-generate \
+--model_path HAtrimer_iteration_1.pth \
+--output_path generated_HAtrimer_iteration_1 \
+--gen_name HAtrimer_iteration_1_generated_particles.mrcs \
+--batch_size 50 \
+--box_size 256 \
+--Apix 1.31 \
+--param_path unipose.star \
+--invert \
+--gen_mode 0
+```
+
+Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.mrcs`.
+
+### Step 6: Iteration 1: Co-refinement using a combination of raw particles and synthesized auxiliary particles
+
+Perform **Non-uniform Refinement** in cryoSPARC using a combination of raw particles (`T00_HA_130K-Equalized-Particle-Stack.mrcs`) and synthesized auxiliary particles (`HAtrimer_iteration_1_generated_particles.mrcs`). The parameter settings for this process are:
+- Initial volume: [6idd_align_lp10.mrc](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing).
+- Symmetry: C3.
+- Other parameters: default.
+
+### Step 7: Iteration 1: Reconstruction-only with raw particles and their pose esimated in the co-refinement step
+
+After completing the co-refinement, use the **Particle Sets Tool** in cryoSPARC to separate the raw particles from the combination of raw and synthesized auxiliary particles.
+
+[Optional] Conduct 2D classification of raw particles and manual pick a subset with less top view (62,952 particles).
+
+![J2581](./images/ha_trimer/J2581.png "J2581")
+
+Next, export the poses of the raw particles as a star file by exporting the cryoSPARC job and using the csparc2star.py script from the pyem package.
+
+The expected result (`2581.star`) can be downloaded from [this link](https://drive.google.com/drive/folders/1t_NYeR_CAbMq8OWZchIbXf8UND2wrrkt?usp=sharing).
+
+### Step 8: Iteration 2: Train the neural network in the generative module
+
+### Step 9: Iteration 2: Generate auxiliary particles with the trained neural network
 
 # Options/Arguments
 
