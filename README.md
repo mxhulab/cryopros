@@ -9,9 +9,9 @@ For more details, please refer to the preprint ["Addressing preferred orientatio
 
 ## The List of Available Demo Cases
 
-| dataset |expected result link |
+| dataset |cast study |
 | ----------- | ----------------- |
-| HA-trimer (EMPIAR-10096) | [TBD] |
+| untitled HA-trimer (EMPIAR-10096) | [link](#case-study-achieving-349å-resolution-for-an-untitled-ha-trimer-empiar-10096) |
 
 # Installation
 
@@ -92,7 +92,12 @@ Using cryoPROS to address the preferred orientation issue in single-particle cry
 
 ## Case Study: Achieving 3.49Å Resolution for an Untitled HA-Trimer (EMPIAR-10096)
 
+CryoPROS facilitates the recovery of near-atomic-resolution details from the untitled HA-trimer dataset.
 ![result](./images/ha_trimer/ha_trimer_result.png "Result")
+
+- **a**, The top row illustrates the pose distribution obtained through the tilt strategy (130,000 particles), while the middle (side view) and bottom rows  (top view) depict the reconstructed density maps of the tilt-collected dataset: autorefinement (pink) and state-of-the-art results (violet). Notably, achieving the state-of-the-art result necessitates intricate subsequent refinements at the per-particle level, involving multi-round 3D classification, defocus refinement, and Bayesian polishing.
+- **b**, Similar to **a**, with the first row showcasing the pose distribution of untilted raw particle stacks (130,000 particles), the generated particles (130,000 particles), and selected subset for local refinement (31,146 particles). Reconstructed density maps of the untilted dataset, including autorefinement (yellow), cryoPROS (cyan), and cryoPROS with follow-up local refinement (magenta), are presented. Maps in a and b are superimposed on the envelope of the HA-trimer atomic model (PDB ID: 3WHE, grey). 
+- **c**, Detailed close-ups of selected parts of the density maps shown in a and b, ordered consistently. The first and second rows display regions of alpha-helix and beta-sheet with low transparency, respectively. The third row and fourth row show the selected regions in gray mesh style, with the embedded atomic model colored by average Q-score.sc value and average Q-score.bb value, respectively.
 
 ### Step 1: Download Untitled HA-Trimer Dataset (EMPIAR-10096)
 
