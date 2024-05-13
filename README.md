@@ -61,7 +61,7 @@ pip install torch=={x.x.x} torchvision=={x.x.x} --extra-index-url https://downlo
 
 For example, to install PyTorch 2.2.2 and torchvision 0.17.2 for CUDA Driver 10.2, you would use:
 ```
-pip install torch==1.11.0+cu102 torchvision==0.12.0+cu102 --extra-index-url https://download.pytorch.org/whl/cu102
+pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu102
 ```
 
 ## Installing CryoPROS
