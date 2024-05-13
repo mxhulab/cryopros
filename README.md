@@ -177,7 +177,31 @@ The expected trained neural network (`HAtrimer_iteration_1.pth`) can be download
 
 ### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
 
-### Step 6: Iteration 1: Co-refinement
+Auxiliary particles should display uniform poses. Therefore, the initial phase involves replacing the poses in the input star file, [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), with poses sampled from a uniform distribution of spatial rotations, which can be accomplised via:
+```
+cryopros-uniform-pose \
+--input ./autorefinement.star \
+--ouput ./unipose.star \
+```
+The expected `unipose.star` can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
+
+Next, the auxiliary particles are generated using the neural network that was trained in the preceding step, with the command
+```
+cryopros-generate \
+--model_path HAtrimer_iteration_1.pth \
+--output_path generated_HAtrimer_iteration_1 \
+--gen_name HAtrimer_iteration_1_generated_particles.mrcs \
+--batch_size 50 \
+--box_size 256 \
+--Apix 1.31 \
+--param_path unipose.star \
+--invert \
+--gen_mode 0
+```
+
+Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.mrcs`.
+
+### Step 6: Iteration 1: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
 ### Step 7: Iteration 1: Reconstruction-only with raw particles and their pose esimated in the co-refinement step
 
