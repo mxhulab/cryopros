@@ -48,13 +48,13 @@ Install the versions of PyTorch and torchvision that correspond to your specific
 pip install torch=={x.x.x} torchvision=={x.x.x} --extra-index-url https://download.pytorch.org/whl/cu{xxx}
 ```
 
-For example, to install PyTorch 1.11.0 and torchvision 0.12.0 for CUDA Driver 10.2, you would use:
+For example, to install PyTorch 2.2.2 and torchvision 0.17.2 for CUDA Driver 10.2, you would use:
 ```
 pip install torch==1.11.0+cu102 torchvision==0.12.0+cu102 --extra-index-url https://download.pytorch.org/whl/cu102
 ```
 
 ## Installing CryoPROS
-Download the precompiled package cryoPROS-1.0-cp312-cp312-linux_x86_64.whl [from the GitHub repository](https://github.com/mxhulab/crypros).
+Download the precompiled package `cryoPROS-1.0-cp312-cp312-linux_x86_64.whl` [from the GitHub repository](https://github.com/mxhulab/crypros).
 ```
 pip install cryoPROS-1.0-cp312-cp312-linux_x86_64.whl
 ```
@@ -92,6 +92,8 @@ Using cryoPROS to address the preferred orientation issue in single-particle cry
 
 ## Case Study: Achieving 3.49Å Resolution for an Untitled HA-Trimer (EMPIAR-10096)
 
+![result](./images/ha_trimer/ha_trimer_result.png "Result")
+
 ### Step 1: Download Untitled HA-Trimer Dataset (EMPIAR-10096)
 
 Download [EMPIAR-10096 (~32GB)](https://ftp.ebi.ac.uk/empiar/world_availability/10096/data/Particle-Stack/).
@@ -101,7 +103,7 @@ wget -nH -m ftp://ftp.ebi.ac.uk/empiar/world_availability/10096/data/Particle-St
 ```
 This dataset contains 130,000 extracted particles with box size of 256 and pixel size of 1.31Å/pix.
 
-![dataset](./images/HAtrimer/dataset.png "Dataset")
+![dataset](./images/ha_trimer/dataset.png "Dataset")
 
 The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equalized_run-data.star`.
 
