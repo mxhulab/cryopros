@@ -124,32 +124,28 @@ The expected outcome of the process described above is a density map accompanied
 
 ![J379](./images/ha_trimer/J379.png "J379")
 
-To facilitate training, convert the pose file to a star file format using [`pyem`](https://github.com/asarnow/pyem):
+This pose metafile needs to be converted into the STAR file format to facilitate downstream training. This conversion can be achieved using `csparc2star.py` from the [`pyem`](https://github.com/asarnow/pyem).
 ```
 python csparc2star.py cryosparc_P68_J379_005_particles.cs autorefinement.star
 ```
+The expected result, `autorefinement.star`, which includes the estimated pose parameters, can be downloaded from [this link](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing).
 
 ## Step 3: Generate the initial latent volume
-- Selecting a similar model, here we choose a homologous protein with PDB ID: 6IDD (chains a, g, and e).
-- Embedding the model in and fitting it into density map ([cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing)) in Chimera, then run the following commands in the Chimera command line:
+
+- The initial latent volume is generated using the homologous protein atomic model, selected from PDB ID: 6IDD, specifically chains a, g, and e.
+- Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the following commands in the Chimera command line:
 ```
 molmap #1 2.62 onGrid #0
 save #1 6idd_align.mrc
 ```
 <p align="center">
-<img src="./figures/HAtrimer/model_fit.png" width="200px">
+<img src="./images/ha_trimer/model_fit.png" width="200px">
 </p>
 
-
-- Use Relion to perform low-pass filtering on the aligned volume (6idd_align.mrc) to generate the first-round latent volume for training:
+Finnaly, use Relion to apply low-pass filtering to the aligned volume (6idd_align.mrc), which will generate the initial latent volume [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing) necessary for the first iteration of training in cryoPROS, via the command:
 ```
 relion_image_handler --i 6idd_align.mrc --o 6idd_align_lp10.mrc --lowpass 10
 ```
-
-Output:
-- Auto refinement pose file ([autorefinement.star](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing).)
-- Auto refinement density map ([cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing))
-- [6idd_align_lp10.mrc](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing) used as the first-round latent volume for training.
 
 # Options/Arguments
 
