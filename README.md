@@ -142,12 +142,29 @@ save #1 6idd_align.mrc
 <img src="./images/ha_trimer/model_fit.png" width="200px">
 </p>
 
-Finnaly, use Relion to apply low-pass filtering to the aligned volume (6idd_align.mrc), which will generate the initial latent volume [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing) necessary for the first iteration of training in cryoPROS, via the command:
+Finnaly, use Relion to apply low-pass filtering to the aligned volume (6idd_align.mrc), which will generate the initial latent volume `6idd_align_lp10.mrc` necessary for the first iteration of training in cryoPROS, via the command:
 ```
 relion_image_handler --i 6idd_align.mrc --o 6idd_align_lp10.mrc --lowpass 10
 ```
+The expected result, `6idd_align_lp10.mrc`, can be downloaded from [this link](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing).
 
 ### Step 4: Iteration 1: Train the neural network in the generative module
+
+The particles `T00_HA_130K-Equalized-Particle-Stack.mrcs` and their refined poses, available at [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), are utilized to train the neural network within the generative module. This training starts with the initial latent volume, which can be accessed at [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing), via command:
+```
+cryopros-train \
+--opt ./options/train.json \
+--gpu_ids 0 1 2 3 \
+--task_name HAtrimer_iteration_1 \
+--box_size 256 \
+--Apix 1.31 \
+--volume_scale 50 \
+--init_volume_path 6idd_align_lp10.mrc \
+--data_path T00_HA_130K-Equalized-Particle-Stack.mrcs \
+--param_path autorefinement.star \
+--invert \
+--dataloader_batch_size 8
+```
 
 ### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
 
