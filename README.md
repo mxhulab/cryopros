@@ -114,21 +114,21 @@ The CTF parameters for each particle are in the metadata file `T00_HA_130K-Equal
 
 ## Step 2. Ab-initio auto-refinement
 
-Perform auto-refinement:
+Perform ab-initio auto-refinement:
 - Import the downloaded data into relion and execute the **3D initial model** task.
 - Import the raw data and initial volume obtained by relion into CryoSPARC and perform the **Non-uniform Refinement** task on raw particles with C3 symmetry.
 
-Auto refinement output:
-- Auto refinement result density map: [cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing).
-- A pose file (e.g., named `cryosparc_P68_J379_005_particles.cs`) containing information about estimated pose parameters.
+The expected outcome of the process described above is a density map accompanied by a pose metafile:
+- density map: [cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing).
+- pose metafile (e.g., named `cryosparc_P68_J379_005_particles.cs`) containing information about estimated pose parameters.
 
-![J379](./figures/HAtrimer/J379.png "J379")
+![J379](./figures/ha_trimer/J379.png "J379")
 
-To facilitate training, convert the pose file to a star file format using `pyem`:
+To facilitate training, convert the pose file to a star file format using [`pyem`](https://github.com/asarnow/pyem):
 ```
 python csparc2star.py cryosparc_P68_J379_005_particles.cs autorefinement.star
 ```
-- Selecting a similar model, here we choose a homologous protein with PDB ID: 6idd (chains a, g, and e).
+- Selecting a similar model, here we choose a homologous protein with PDB ID: 6IDD (chains a, g, and e).
 - Embedding the model in and fitting it into density map ([cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing)) in Chimera, then run the following commands in the Chimera command line:
 ```
 molmap #1 2.62 onGrid #0
