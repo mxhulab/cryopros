@@ -24,7 +24,18 @@ CryoPROS is free software developed in Python and is available as a Python packa
 
 ## Dependencies
 
-[TBD]
+- torch
+- torchvision
+- mrcfile>=1.3
+- scipy>=1.6.2
+- tqdm>=4.59
+- argparse>=1.4
+- numpy>=1.21.5
+- pandas>=1.3.2
+- opencv-python
+- matplotlib
+
+All dependencies except for torch and torchvision can be managed by Pip during the installation of cryoPROS.
 
 ## Preparation of CUDA Environment
 
