@@ -153,7 +153,7 @@ The expected result, `6idd_align_lp10.mrc`, can be downloaded from [this link](h
 The particles `T00_HA_130K-Equalized-Particle-Stack.mrcs` and their refined poses, available at [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), are utilized to train the neural network within the generative module. This training starts with the initial latent volume, which can be accessed at [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing), via command:
 ```
 cryopros-train \
---opt ./options/train.json \
+--opt {CONDA_ENV_PATH}/lib/python3.12/site-packages/cryoPROS/options/train.json \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_1 \
 --box_size 256 \
@@ -165,6 +165,15 @@ cryopros-train \
 --invert \
 --dataloader_batch_size 8
 ```
+`{CONDA_ENV_PATH}` is the location of the `CRYOPROS_ENV`, the Conda environment created during the installation process. If [Anaconda 3](https://www.anaconda.com) is used to create the Conda environment, then `{CONDA_ENV_PATH}` should be set to `{ANACONDA_INSTALLATION_PATH}/envs/CRYOPROS_ENV`.
+Moreover, 4 GPUs are utilized for training in the aforementioned setting. Adjust the `--gpu_ids` option to accommodate your computing environment.
+
+Upon completion of the above command:
+- A directory named `./generate/HAtrimer_iteration_1` will be created.
+- The training log will be stored at `./generate/HAtrimer_iteration_1/train.log`.
+- The trained neural networks will be saved under `./generate/HAtrimer_iteration_1/models/`.
+
+The expected trained neural network (`HAtrimer_iteration_1.pth`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
 
 ### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
 
