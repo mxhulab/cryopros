@@ -294,7 +294,7 @@ EMReady.sh cryosparc_P68_J2599_volume_map_sharp.mrc 2599_refined.mrc
 relion_image_handler --i 2599_refined.mrc --o 2599_refined.mrc --new_box 256 --rescale_angpix 1.31
 ```
 
-The expected refined density map ('2599_refined.mrc') can be downloaded from [this link](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing).
+The expected processed density map ('2599_refined.mrc') can be downloaded from [this link](https://drive.google.com/drive/folders/1cmkHdp6UAuFs0R__-6ZK96yxcRffqZAJ?usp=sharing).
 
 ### Step 13: Local Refinement
 
@@ -312,6 +312,13 @@ Finally, perform a **Local Refinement** task using the following settings:
 - Symmetry: C3
 - Other parameters: default
 
+The expected refined density map ('cryosparc_P68_J4826_volume_map_sharp.mrc') can be downloaded from [this link](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing).
+
+### Step 14: Post-processing by EMReady
+
+This step is identical to **Step 12**.
+
+The expected processed density map ('4826_refined.mrc') can be downloaded from [this link](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing).
 # Options/Arguments
 
 <a name="cryopros-train"></a>
