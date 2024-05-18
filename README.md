@@ -212,6 +212,10 @@ cryopros-generate \
 
 Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.mrcs`.
 
+To update the particle root in the starfile for the generated particles from `unipose.star`, use the following command in vim:
+
+![rename](./images/ha_trimer/rename.png "rename")
+
 ### Step 6: Iteration 1: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
 Perform **Non-uniform Refinement** in cryoSPARC using a combination of raw particles (`T00_HA_130K-Equalized-Particle-Stack.mrcs`) and synthesized auxiliary particles (`HAtrimer_iteration_1_generated_particles.mrcs`). The parameter settings for this process are:
@@ -282,6 +286,10 @@ cryopros-generate \
 ```
 
 Generated auxiliary particles are output in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.mrcs`.
+
+To update the particle root in the starfile for the generated particles from `unipose.star`, use the following command in vim:
+
+![rename_iter2](./images/ha_trimer/rename_iter2.png "rename_iter2")
 
 ### Step 10: Iteration 2: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
