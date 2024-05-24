@@ -1,5 +1,5 @@
 # CryoPROS: addressing preferred orientation in single-particle cryo-EM through AI-generated auxiliary particles
-CryoPROS is a computational framework specifically designed to tackle misalignment errors caused by preferred orientation issues in single-particle cryo-EM. It addresses these challenges by co-refining synthesized and experimental data. By utilizing a self-supervised deep generative model, CryoPROS synthesizes auxiliary particles that effectively eliminate these misalignment errors through a co-refinement process.
+CryoPROS is a computational framework specifically designed to tackle misalignment errors caused by preferred orientation issues in single-particle cryo-EM. It addresses these challenges by co-refining synthesized and experimental data. By utilizing a self-supervised deep generative model, cryoPROS synthesizes auxiliary particles that effectively eliminate these misalignment errors through a co-refinement process.
 
 ## Video Tutorial
 [TBD]
