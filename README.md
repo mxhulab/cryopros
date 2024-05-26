@@ -22,7 +22,7 @@ CryoPROS is free software developed in Python and is available as a Python packa
 ## Prerequisites
 
 - Python version 3.9, 3.10 or 3.12.
-- NVIDIA CUDA library 10.2 or later installed in the user's environment.
+- NVIDIA CUDA library 9.2 or later installed in the user's environment.
 
 ## Dependencies
 
@@ -70,13 +70,24 @@ pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.
 ```
 
 ## Installing CryoPROS
-Download the precompiled package `cryoPROS-1.0-cp{xx}-cp{xx}-linux_x86_64.whl` [from the GitHub repository](https://github.com/mxhulab/crypros).
-```
+
+You can download the precompiled package `cryoPROS-1.0-cp{xx}-cp{xx}-linux_x86_64.whl` from the [GitHub repository](https://github.com/mxhulab/crypros).
+
+Once downloaded, you can install the package using pip with the following command:
+
+```bash
 pip install cryoPROS-1.0-cp{xx}-cp{xx}-linux_x86_64.whl
 ```
-Replace `{xx}` with the corresponding Python version.
+
+Replace `{xx}` with the corresponding Python version. For example:
+- For Python 3.9: `cryoPROS-1.0-cp39-cp39-linux_x86_64.whl`
+- For Python 3.10: `cryoPROS-1.0-cp310-cp310-linux_x86_64.whl`
+- For Python 3.12: `cryoPROS-1.0-cp12-cp12-linux_x86_64.whl`
+
+Ensure you are in the correct directory containing the downloaded `.whl` file when executing the `pip install` command.
 
 ## Verifying Installation
+
 You can verify whether cryoPROS has been installed successfully by running the following command:
 ```
 cryopros-generate -h
