@@ -11,9 +11,9 @@ For more details, please refer to the preprint ["Addressing preferred orientatio
 
 ## The List of Available Demo Cases
 
-| dataset |cast study |
-| ----------- | ----------------- |
-| untitled HA-trimer (EMPIAR-10096) | [link](#case-study-achieving-349å-resolution-for-an-untitled-ha-trimer-empiar-10096) |
+| dataset | cast study | exepected result |
+| ----------- | ----------------- | -------- |
+| untitled HA-trimer (EMPIAR-10096) | [link](#case-study-achieving-349å-resolution-for-an-untitled-ha-trimer-empiar-10096) | [3.49Å model-to-map resolution density map](https://drive.google.com/drive/folders/1xPHg9zVZjUGuFBIb_1D91iAuW2WEvt90?usp=sharing) |
 
 # Installation
 
@@ -21,8 +21,8 @@ CryoPROS is free software developed in Python and is available as a Python packa
 
 ## Prerequisites
 
-- Python version 3.12.
-- NVIDIA CUDA library 10.2 or later installed in the user's environment.
+- Python version 3.9, 3.10 or 3.12.
+- NVIDIA CUDA library 9.2 or later installed in the user's environment.
 
 ## Dependencies
 
@@ -43,10 +43,13 @@ All dependencies except for torch and torchvision can be managed by Pip during t
 
 ### Creating and Activating a Conda Virtual Environment
 
-First, create a Conda virtual environment named `CRYOPROS_ENV` with Python 3.10 by running the following command:
+First, create a Conda virtual environment named `CRYOPROS_ENV` with Python 3.9, 3.10, or 3.12 by running the following command:
+
 ```
-conda create -n CRYOPROS_ENV python==3.12
+conda create -n CRYOPROS_ENV python=={x.x}
 ```
+
+Replace `{x.x}` with the desired Python version. Different Python versions correspond to different compatible ranges of PyTorch and CUDA versions. Specifically, Python 3.9 is compatible with PyTorch 1.7.1 to 2.3.0 and CUDA 9.2 to CUDA 12.1, Python 3.10 is compatible with PyTorch 1.12.1 to 2.3.0 and CUDA 10.2 to 12.1, and Python 3.12 is compatible with PyTorch 2.3.0 and CUDA 11.8 to 12.1.
 
 After creating the environment, activate it using:
 ```
@@ -67,12 +70,24 @@ pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.
 ```
 
 ## Installing CryoPROS
-Download the precompiled package `cryoPROS-1.0-cp312-cp312-linux_x86_64.whl` [from the GitHub repository](https://github.com/mxhulab/crypros).
-```
-pip install cryoPROS-1.0-cp312-cp312-linux_x86_64.whl
+
+You can download the precompiled package `cryoPROS-1.0-cp{xx}-cp{xx}-linux_x86_64.whl` from the [GitHub repository](https://github.com/mxhulab/crypros).
+
+Once downloaded, you can install the package using pip with the following command:
+
+```bash
+pip install cryoPROS-1.0-cp{xx}-cp{xx}-linux_x86_64.whl
 ```
 
+Replace `{xx}` with the corresponding Python version. For example:
+- For Python 3.9: `cryoPROS-1.0-cp39-cp39-linux_x86_64.whl`
+- For Python 3.10: `cryoPROS-1.0-cp310-cp310-linux_x86_64.whl`
+- For Python 3.12: `cryoPROS-1.0-cp12-cp12-linux_x86_64.whl`
+
+Ensure you are in the correct directory containing the downloaded `.whl` file when executing the `pip install` command.
+
 ## Verifying Installation
+
 You can verify whether cryoPROS has been installed successfully by running the following command:
 ```
 cryopros-generate -h
