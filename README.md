@@ -209,7 +209,7 @@ Auxiliary particles should display uniform poses. Therefore, the initial phase i
 ```
 cryopros-uniform-pose \
 --input ./autorefinement.star \
---ouput ./unipose.star \
+--output ./unipose.star \
 ```
 The expected `unipose.star` can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
 
