@@ -186,7 +186,7 @@ The expected result, `6idd_align_lp10.mrc`, can be downloaded from [this link](h
 The particles `T00_HA_130K-Equalized-Particle-Stack.mrcs` and their refined poses, available at [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), are utilized to train the neural network within the generative module. This training starts with the initial latent volume, which can be accessed at [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing), via command:
 ```
 cryopros-train \
---opt {CONDA_ENV_PATH}/lib/python3.12/site-packages/cryoPROS/options/train.json \
+--opt {CONDA_ENV_PATH}/lib/python3.10/site-packages/cryoPROS/options/train.json \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_1 \
 --box_size 256 \
@@ -275,7 +275,7 @@ The training process follows the approach outlined in **Step 4**.
 
 ```
 cryopros-train \
---opt {CONDA_ENV_PATH}/lib/python3.12/site-packages/cryoPROS/options/train.json \
+--opt {CONDA_ENV_PATH}/lib/python3.10/site-packages/cryoPROS/options/train.json \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_2 \
 --box_size 256 \
