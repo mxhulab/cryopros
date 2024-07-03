@@ -164,7 +164,12 @@ The expected result, `autorefinement.star`, which includes the estimated pose pa
 - Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the following commands in the Chimera command line:
 ```
 molmap #1 2.62 onGrid #0
-save #1 6idd_align.mrc
+save #2 6idd_align.mrc
+```
+- Or in the ChimeraX command line:
+```
+molmap #2 2.62 onGrid #1
+save 6idd_align.mrc #3
 ```
 <p align="center">
 <img src="./images/ha_trimer/model_fit.png" width="200px">
@@ -181,7 +186,7 @@ The expected result, `6idd_align_lp10.mrc`, can be downloaded from [this link](h
 The particles `T00_HA_130K-Equalized-Particle-Stack.mrcs` and their refined poses, available at [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), are utilized to train the neural network within the generative module. This training starts with the initial latent volume, which can be accessed at [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing), via command:
 ```
 cryopros-train \
---opt {CONDA_ENV_PATH}/lib/python3.12/site-packages/cryoPROS/options/train.json \
+--opt {CONDA_ENV_PATH}/lib/python3.10/site-packages/cryoPROS/options/train.json \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_1 \
 --box_size 256 \
@@ -201,7 +206,7 @@ Upon completion of the above command:
 - The training log will be stored at `./generate/HAtrimer_iteration_1/train.log`.
 - The trained neural networks will be saved under `./generate/HAtrimer_iteration_1/models/`.
 
-The expected trained neural network (`HAtrimer_iteration_1.pth`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
+The expected trained neural network (`HAtrimer_iteration_1.pth`, actually the `latest.pth` under `./generate/HAtrimer_iteration_1/models/`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
 
 ### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
 
@@ -242,22 +247,27 @@ Perform **Non-uniform Refinement** in cryoSPARC using a combination of raw parti
 
 ### Step 7: Iteration 1: Reconstruction-only with raw particles and their pose esimated in the co-refinement step
 
-After completing the co-refinement, use the **Particle Sets Tool** in cryoSPARC to separate the raw particles from the combination of raw and synthesized auxiliary particles.
+After completing the co-refinement, use the **Particle Sets Tool** in cryoSPARC to separate the raw particles from the combination of raw and synthesized auxiliary particles. The parameter settings for this process are:
+- Particles (A): raw and auxiliary particles in **Step 6**.
+- Particles (B): raw particles.
+- Action: intersect.
 
 [Optional] Conduct 2D classification of raw particles and manual pick a subset with less top view (62,952 particles).
 
 ![J2581](./images/ha_trimer/J2581.png "J2581")
 
+Then, execute **Homogeneous Reconstruction Only** task on raw particles subset. The expected density map (`cryosparc_P68_J2581_volume_map_sharp.mrc`) can be download from [this link](https://drive.google.com/drive/folders/1t_NYeR_CAbMq8OWZchIbXf8UND2wrrkt?usp=sharing).
+
 Next, export the poses of the raw particles as a star file (`2581.star`) by exporting the cryoSPARC job and using the `csparc2star.py` script from the pyem package.
 
 The expected result (`2581.star`) can be downloaded from [this link](https://drive.google.com/drive/folders/1t_NYeR_CAbMq8OWZchIbXf8UND2wrrkt?usp=sharing).
 
-Then, execute **Homogeneous Reconstruction Only** task on raw particles subset. The expected density map (`cryosparc_P68_J2581_volume_map_sharp.mrc`) can be download from [this link](https://drive.google.com/drive/folders/1t_NYeR_CAbMq8OWZchIbXf8UND2wrrkt?usp=sharing).
-
 Finally, Use Relion to generate the subset stack (`raw_iter_2.mrcs`) by this command:
 ```
-relion_stack_create --i 2581.star --o raw_iter2
+relion_stack_create --i 2581.star --o raw_iter_2
 ```
+
+Note that the `2581.star` file should be placed in the proper path corresponding to the raw particles' path. Here, put it in the same directory where the cryoSPARC project is stored.
 
 ### Step 8: Iteration 2: Train the neural network in the generative module
 
@@ -265,13 +275,13 @@ The training process follows the approach outlined in **Step 4**.
 
 ```
 cryopros-train \
---opt {CONDA_ENV_PATH}/lib/python3.12/site-packages/cryoPROS/options/train.json \
+--opt {CONDA_ENV_PATH}/lib/python3.10/site-packages/cryoPROS/options/train.json \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_2 \
 --box_size 256 \
 --Apix 1.31 \
 --volume_scale 50 \
---cryosparc_P68_J2581_volume_map_sharp.mrc \
+--init_volume_path cryosparc_P68_J2581_volume_map_sharp.mrc \
 --data_path raw_iter_2.mrcs \
 --param_path 2581.star \
 --invert \
@@ -283,7 +293,7 @@ Upon completion of the above command:
 - The training log will be stored at `./generate/HAtrimer_iteration_2/train.log`.
 - The trained neural networks will be saved under `./generate/HAtrimer_iteration_2/models/`.
 
-The expected trained neural network (`HAtrimer_iteration_2.pth`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
+The expected trained neural network (`HAtrimer_iteration_2.pth`, actually the `latest.pth` under `./generate/HAtrimer_iteration_2/models/`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
 
 ### Step 9: Iteration 2: Generate auxiliary particles with the trained neural network
 
@@ -305,8 +315,9 @@ cryopros-generate \
 Generated auxiliary particles are output in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.mrcs`.
 
 To update the particle root in the starfile for the generated particles from `unipose.star`, use the following command in vim:
-
-![rename_iter2](./images/ha_trimer/rename_iter2.png "rename_iter2")
+```
+:%s/HAtrimer_iteration_1_generated_particles.mrcs/HAtrimer_iteration_2_generated_particles.mrcs
+```
 
 ### Step 10: Iteration 2: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
