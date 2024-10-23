@@ -1,0 +1,57 @@
+{
+  "task": "task_name" 
+  , "gpu_ids": [0, 1, 2, 3]
+  , "num_gen": 10
+  , "box_size": 256
+  , "Apix": 1
+  , "invert": true
+  , "init_volume_path": ""
+  , "update_volume": false
+  , "volume_scale": 50.0
+  , "noise_level": 0
+  , "data_scale": 0.1
+
+  , "path": {
+    "root": "generate" 
+    , "pretrained_net": null      // path of pretrained model
+  }
+
+  , "model": {
+    "nf": 64
+    , "nls": [2, 2, 4, 4]
+    , "z_dim": 16
+    }
+
+  , "datasets": {
+    "train": {
+      "name": "train_dataset"           // just name
+      , "data_path": ""
+      , "param_path": ""
+
+      , "n_max": null
+      , "dataloader_shuffle": true
+      , "dataloader_num_workers": 8
+      , "dataloader_batch_size": 16
+    }
+  }
+
+  , "train": { 
+    "optimizer_type": "adam"        // fixed, adam is enough
+    , "optimizer_lr": 1e-4               // learning rate
+    , "KL_anneal": "linear"
+    , "KL_anneal_maxiter": 10000
+    , "KL_weight": 1e-4
+    , "model_weight": 0
+    
+    , "max_iter": 30000
+
+    , "scheduler_type": "MultiStepLR" // "MultiStepLR" is enough
+    , "scheduler_milestones": [20000]
+    , "scheduler_gamma": 0.5
+
+    , "checkpoint_test": 10000            // for testing
+    , "checkpoint_save": 10000           // for saving model
+    , "checkpoint_print": 1000            // for print
+  }
+}
+

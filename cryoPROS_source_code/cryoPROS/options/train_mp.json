@@ -1,0 +1,45 @@
+{
+  "task": "task_name"    //  root/task/images-models-options
+  , "gpu_ids": [0, 1, 2, 3]
+  , "n_channels": 1  // broadcast to "datasets", 1 for grayscale, 3 for color
+  , "box_size": 256
+  , "Apix": 1
+  , "invert": true
+  , "init_volume_path": ""
+  , "volume_scale": 5
+  , "update_volume_scale": false
+  , "update_volume": false
+  , "mask_path": ""
+
+  , "path": {
+    "root": "reconstruct" 
+    , "pretrained_net": null      // path of pretrained model
+  }
+
+  , "datasets": {
+    "train": {
+      "name": "train_dataset"           // just name
+      , "data_path": ""
+      , "param_path": ""
+
+      , "n_max": null
+      , "dataloader_shuffle": true
+      , "dataloader_num_workers": 8
+      , "dataloader_batch_size": 24
+    }
+  }
+
+  , "train": { 
+    "optimizer_type": "adam"        // fixed, adam is enough
+    , "optimizer_lr": 1e-4               // learning rate
+
+    , "scheduler_type": "MultiStepLR" // "MultiStepLR" is enough
+    , "scheduler_milestones": [10000]
+    , "scheduler_gamma": 0.5
+
+    , "checkpoint_test": 5000            // for testing
+    , "checkpoint_print": 200            // for print
+    
+    , "max_iter": 20000
+  }
+}
