@@ -196,7 +196,8 @@ cryopros-train \
 --data_path T00_HA_130K-Equalized-Particle-Stack.mrcs \
 --param_path autorefinement.star \
 --invert \
---dataloader_batch_size 8
+--dataloader_batch_size 8 \
+--dataloader_num_workers 0 \
 ```
 `{CONDA_ENV_PATH}` is the location of the `CRYOPROS_ENV`, the Conda environment created during the installation process. If [Anaconda 3](https://www.anaconda.com) is used to create the Conda environment, then `{CONDA_ENV_PATH}` should be set to `{ANACONDA_INSTALLATION_PATH}/envs/CRYOPROS_ENV`.
 Moreover, 4 GPUs are utilized for training in the aforementioned setting. Adjust the `--gpu_ids` option to accommodate your computing environment.
@@ -229,7 +230,7 @@ cryopros-generate \
 --Apix 1.31 \
 --param_path unipose.star \
 --invert \
---gen_mode 0
+--gen_mode 2 \
 ```
 
 Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.mrcs`.
@@ -285,7 +286,8 @@ cryopros-train \
 --data_path raw_iter_2.mrcs \
 --param_path 2581.star \
 --invert \
---dataloader_batch_size 8
+--dataloader_batch_size 8 \
+--dataloader_num_workers 0 \
 ```
 
 Upon completion of the above command:
@@ -309,7 +311,7 @@ cryopros-generate \
 --Apix 1.31 \
 --param_path unipose.star \
 --invert \
---gen_mode 0 \
+--gen_mode 2 \
 ```
 
 Generated auxiliary particles are output in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.mrcs`.
