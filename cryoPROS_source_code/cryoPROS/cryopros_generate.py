@@ -4,7 +4,6 @@ import argparse
 import os
 import mrcfile
 from tqdm import tqdm
-import pickle
 import site
 import sys
 site_packages_dir = site.getsitepackages()[0]
@@ -13,17 +12,20 @@ sys.path.append(package_path)
 from scipy.spatial.transform import Rotation as R
 from utils.utils_read_star_ctf import read_ctf_from_starfile
 from utils.utils_read_star_pose import read_pose_from_starfile
+from utils.utils_pose import generate_uniform_pose
 
 def parse_argument():
 
     parser = argparse.ArgumentParser(description='Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model.')
 
     parser.add_argument('--model_path' , type=str  , help='input pretrained model path'                            , required = True)
+    parser.add_argument('--param_path' , type=str  , help='path of star file which contains the imaging parameters', required = True)
+
     parser.add_argument('--output_path', type=str  , help='output output synthesized auxiliary particle stack'     , required = True)
+    parser.add_argument('--gen_name'   , type=str  , help='filename of the generated auxiliary particle stack'     , required = True)
+
     parser.add_argument('--box_size'   , type=int  , help='box size'                                               , required = True)
     parser.add_argument('--Apix'       , type=float, help='pixel size in Angstrom'                                 , required = True)
-    parser.add_argument('--gen_name'   , type=str  , help='filename of the generated auxiliary particle stack'     , required = True)
-    parser.add_argument('--param_path' , type=str  , help='path of star file which contains the imaging parameters', required = True)
     parser.add_argument("--invert"     , action='store_true'          , help='invert the image sign')
     parser.add_argument('--batch_size' , type=int  , default=10       , help='batch size')
     parser.add_argument('--num_max'    , type=int  , default=100000000, help='maximum number particles to generate')
@@ -48,7 +50,7 @@ def main():
     print(args)
 
     model_path = args.model_path
-    G_path = args.output_path
+    output_path = args.output_path
     batch_size = args.batch_size
     box_size = args.box_size
     Apix = args.Apix
@@ -60,9 +62,13 @@ def main():
     nls = args.nls
     gen_mode = args.gen_mode
 
-    if param_path.endswith(".star"):
-        pose = read_pose_from_starfile(param_path, Apix, box_size)
-        ctfs = read_ctf_from_starfile(param_path, Apix, box_size)
+    os.system('mkdir -p ' + output_path)    
+
+    uniform_pose_path = os.path.join(output_path, f'{gen_name}.star')
+    generate_uniform_pose(param_path, uniform_pose_path, gen_name)
+
+    pose = read_pose_from_starfile(uniform_pose_path, Apix, box_size)
+    ctfs = read_ctf_from_starfile(uniform_pose_path, Apix, box_size)
     
     rotations = pose[0]
     trans = pose[1]
@@ -84,8 +90,6 @@ def main():
     trans = trans[:num_max]
     ctfs = ctfs[:num_max]
     metas = metas[:num_max]
-        
-    os.system('mkdir -p ' + G_path)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.empty_cache()
@@ -109,12 +113,12 @@ def main():
     model = model.to(device)
     
     num_gen = rotations.shape[0]
-    
-    print(num_gen)
-    
+
+    print(f"Generating {num_gen} particles.")
+
     num_iter = num_gen // batch_size if num_gen % batch_size == 0 else num_gen // batch_size + 1
-    
-    with mrcfile.new_mmap(os.path.join(G_path, gen_name), shape=(num_gen, box_size, box_size), mrc_mode=gen_mode, overwrite=True) as mrc:
+
+    with mrcfile.new_mmap(os.path.join(output_path, f'{gen_name}.mrcs'), shape=(num_gen, box_size, box_size), mrc_mode=gen_mode, overwrite=True) as mrc:
         for k in tqdm(range(num_iter)):
 
             ctf = ctfs[k*batch_size:(k+1)*batch_size].to(device)
@@ -122,10 +126,10 @@ def main():
             tran = trans[k*batch_size:(k+1)*batch_size].to(device)
             meta = metas[k*batch_size:(k+1)*batch_size].to(device)
             
-            img_G = model.generate(rotation=rotation, trans=tran, ctf_para=ctf, meta=meta)
-            img_G = img_G.detach().cpu().squeeze().numpy().astype(np.float32) / data_scale
+            par_gen = model.generate(rotation=rotation, trans=tran, ctf_para=ctf, meta=meta)
+            par_gen = par_gen.detach().cpu().squeeze().numpy().astype(np.float32) / data_scale
             
-            mrc.data[k*batch_size:(k+1)*batch_size] = img_G
+            mrc.data[k*batch_size:(k+1)*batch_size] = par_gen
     
 if __name__ == '__main__':
 
