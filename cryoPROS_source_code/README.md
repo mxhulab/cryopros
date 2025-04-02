@@ -1,12 +1,17 @@
 # cryoPROS
 
+Install the package using pip with the following command:
+```bash
+pip install .
+```
+
 # Tutorial
 
 ## Step 1 (Optional, Reconstruct micelle for membrane protein) 
 
 First, generate a volume mask with a user-chosen threshold value:
 ```shell
-python cryopros_gen_mask.py \
+cryopros-gen-mask \
 --volume_path latent_volume.mrc \             # Path to latent volume
 --result_path ./mask.mrc \                    # Path to volume mask
 --threshold 0.1 \                             # Threshold value, chosen by the user
@@ -14,8 +19,7 @@ python cryopros_gen_mask.py \
 
 Second, reconstruct volume with micelle:
 ```shell
-python cryopros_recondismic.py \
---opt ./options/train_mp.json \              # Fixed
+cryopros-recondismic \
 --gpu_ids 0 1 2 3 \                          # GPU id
 --task_name task_name \                      # Task name
 --box_size 256 \                             # Box size
@@ -34,7 +38,7 @@ The reconstructed density can be found in `./reconstruct/task_name/results/`.
 ## Step 2
 Model training:
 ```shell
-python cryopros_train.py \
+cryopros-train \
 --opt ./options/train.json \                    # Fixed
 --gpu_ids 0 1 2 3 \                             # GPU id
 --task_name task_name \                         # Task name
@@ -53,7 +57,7 @@ The model weights can be found in `./generate/task_name/models/`.
 
 particle generation:
 ```shell
-python cryopros_generate.py \
+cryopros-generate \
 --model_path model.pth \               # Path to pre-trained model in step 2
 --param_path param.star \              # Path to starfile
 --output_path ./generate/ \            # Path to generated particles

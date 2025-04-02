@@ -48,7 +48,7 @@ def parse_argument(json_path):
 
     return parser.parse_args()
 
-def main(json_path='./options/train.json'):
+def main(json_path=os.path.join(package_path, 'options/train.json')):
 
     '''
     # ----------------------------------------
