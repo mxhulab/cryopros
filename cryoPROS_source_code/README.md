@@ -39,7 +39,6 @@ The reconstructed density can be found in `./reconstruct/task_name/results/`.
 Model training:
 ```shell
 cryopros-train \
---opt ./options/train.json \                    # Fixed
 --gpu_ids 0 1 2 3 \                             # GPU id
 --task_name task_name \                         # Task name
 --box_size 256 \                                # Box size
