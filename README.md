@@ -161,14 +161,18 @@ The expected result, `autorefinement.star`, which includes the estimated pose pa
 ### Step 3: Generate the initial latent volume
 
 - The initial latent volume is generated using the homologous protein atomic model, selected from PDB ID: 6IDD, specifically chains a, g, and e.
-- Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the following commands in the Chimera command line:
+- Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the molmap (`molmap #homologous_model pixel_size*2 onGrid #refined map`) commands in the Chimera command line:
 ```
 molmap #1 2.62 onGrid #0
+fit #2 in #0
+vop resample #2 onGrid #0
 save #2 6idd_align.mrc
 ```
 - Or in the ChimeraX command line:
 ```
 molmap #2 2.62 onGrid #1
+fitmap #3 inMap #1 
+vop resample #3 onGrid #1
 save 6idd_align.mrc #3
 ```
 <p align="center">
