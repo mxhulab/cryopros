@@ -1,12 +1,17 @@
 # cryoPROS
 
+Install the package using pip with the following command:
+```bash
+pip install .
+```
+
 # Tutorial
 
 ## Step 1 (Optional, Reconstruct micelle for membrane protein) 
 
 First, generate a volume mask with a user-chosen threshold value:
 ```shell
-python cryopros_gen_mask.py \
+cryopros-gen-mask \
 --volume_path latent_volume.mrc \             # Path to latent volume
 --result_path ./mask.mrc \                    # Path to volume mask
 --threshold 0.1 \                             # Threshold value, chosen by the user
@@ -14,8 +19,7 @@ python cryopros_gen_mask.py \
 
 Second, reconstruct volume with micelle:
 ```shell
-python cryopros_recondismic.py \
---opt ./options/train_mp.json \              # Fixed
+cryopros-recondismic \
 --gpu_ids 0 1 2 3 \                          # GPU id
 --task_name task_name \                      # Task name
 --box_size 256 \                             # Box size
@@ -34,8 +38,7 @@ The reconstructed density can be found in `./reconstruct/task_name/results/`.
 ## Step 2
 Model training:
 ```shell
-python cryopros_train.py \
---opt ./options/train.json \                    # Fixed
+cryopros-train \
 --gpu_ids 0 1 2 3 \                             # GPU id
 --task_name task_name \                         # Task name
 --box_size 256 \                                # Box size
@@ -51,30 +54,20 @@ The model weights can be found in `./generate/task_name/models/`.
 
 ## Step 3
 
-Generate uniform pose data:
-
-```shell
-python cryopros_uniform_pose.py \
---input particles.star \		  # Path to raw particles star file
---ouput unipose.star \            # Path to uniform pose star file
-```
-
-## Step 4
-
 particle generation:
 ```shell
-python cryopros_generate.py \
+cryopros-generate \
 --model_path model.pth \               # Path to pre-trained model in step 2
+--param_path param.star \              # Path to starfile
 --output_path ./generate/ \            # Path to generated particles
---gen_name generated_particles.mrcs \  # Name of generated particles
+--gen_name generated_particles \       # Name of generated particles
 --batch_size 50 \                      # Generation batch size
 --box_size 256 \                       # Box size
 --Apix 1.0 \                           # Pixel size
---param_path param.star \              # Path to starfile
 --invert \                             # Invert projection
 ```
 
-## Step 5
+## Step 4
 Executing "Non-uniform Refinement" on software CryoSPARC:
 ```
 Particle stacks = raw particle stack + generated particle stack
@@ -83,12 +76,12 @@ Initial lowpass resolution (A) = 30
 Set Symmetry according to sample properties, and select default values for other parameters.
 ```
 
-## Step 6
+## Step 5
 Executing "Homogeneous Reconstruction Only" on software CryoSPARC:
 ```
 Particle stacks = raw particle stack (with corrected orientations in step 4)
 Set Symmetry according to sample properties, and select default values for other parameters.
 ```
 
-## Step 7
+## Step 6
 Update latent volume as the reconstructed map in step 5, and re-prepare the ctf.pkl and pose.pkl file from star file obteined in step 5, then retraining CVAE network.

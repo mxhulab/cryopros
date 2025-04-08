@@ -161,14 +161,18 @@ The expected result, `autorefinement.star`, which includes the estimated pose pa
 ### Step 3: Generate the initial latent volume
 
 - The initial latent volume is generated using the homologous protein atomic model, selected from PDB ID: 6IDD, specifically chains a, g, and e.
-- Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the following commands in the Chimera command line:
+- Fit this atomic model it into [the density map gained via previous auto-refinement, i.e., cryosparc_P68_J379_005_volume_map_sharp.mrc](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing) in Chimera, then run the molmap (`molmap #homologous_model pixel_size*2 onGrid #refined map`) commands in the Chimera command line:
 ```
 molmap #1 2.62 onGrid #0
+fit #2 in #0
+vop resample #2 onGrid #0
 save #2 6idd_align.mrc
 ```
 - Or in the ChimeraX command line:
 ```
 molmap #2 2.62 onGrid #1
+fitmap #3 inMap #1 
+vop resample #3 onGrid #1
 save 6idd_align.mrc #3
 ```
 <p align="center">
@@ -196,7 +200,8 @@ cryopros-train \
 --data_path T00_HA_130K-Equalized-Particle-Stack.mrcs \
 --param_path autorefinement.star \
 --invert \
---dataloader_batch_size 8
+--dataloader_batch_size 8 \
+--dataloader_num_workers 0 \
 ```
 `{CONDA_ENV_PATH}` is the location of the `CRYOPROS_ENV`, the Conda environment created during the installation process. If [Anaconda 3](https://www.anaconda.com) is used to create the Conda environment, then `{CONDA_ENV_PATH}` should be set to `{ANACONDA_INSTALLATION_PATH}/envs/CRYOPROS_ENV`.
 Moreover, 4 GPUs are utilized for training in the aforementioned setting. Adjust the `--gpu_ids` option to accommodate your computing environment.
@@ -229,7 +234,7 @@ cryopros-generate \
 --Apix 1.31 \
 --param_path unipose.star \
 --invert \
---gen_mode 0
+--gen_mode 2 \
 ```
 
 Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.mrcs`.
@@ -285,7 +290,8 @@ cryopros-train \
 --data_path raw_iter_2.mrcs \
 --param_path 2581.star \
 --invert \
---dataloader_batch_size 8
+--dataloader_batch_size 8 \
+--dataloader_num_workers 0 \
 ```
 
 Upon completion of the above command:
@@ -309,7 +315,7 @@ cryopros-generate \
 --Apix 1.31 \
 --param_path unipose.star \
 --invert \
---gen_mode 0 \
+--gen_mode 2 \
 ```
 
 Generated auxiliary particles are output in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.mrcs`.

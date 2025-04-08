@@ -37,7 +37,7 @@ def parse_argument(json_path):
     parser.add_argument('--task_name'             , type=str  , default='cryoPROS', help='task name')
     parser.add_argument('--volume_scale'          , type=float, default=50.0      , help='scale factor')
     parser.add_argument('--dataloader_batch_size' , type=int  , default=16        , help='batch size to load data')
-    parser.add_argument('--dataloader_num_workers', type=int  , default=8         , help='number of workers to load data')
+    parser.add_argument('--dataloader_num_workers', type=int  , default=0         , help='number of workers to load data')
     parser.add_argument('--lr'                    , type=float, default=1e-4      , help='learning rate')
     parser.add_argument('--KL_weight'             , type=float, default=1e-4      , help='KL weight')
     parser.add_argument('--max_iter'              , type=int  , default=30000     , help='max number of iterations')
@@ -48,7 +48,7 @@ def parse_argument(json_path):
 
     return parser.parse_args()
 
-def main(json_path='./options/train.json'):
+def main(json_path=os.path.join(package_path, 'options/train.json')):
 
     '''
     # ----------------------------------------

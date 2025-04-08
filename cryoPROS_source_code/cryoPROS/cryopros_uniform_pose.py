@@ -15,31 +15,22 @@ def parse_argument():
     parser.add_argument('--input' , type=str, help='input star file filename' , required = True)
     parser.add_argument('--output', type=str, help='output star file filename', required = True)
 
-    # parser.add_argument('--boundary', type=int, help='Line number of header boundary(optional)', required=False)
-
     if len(sys.argv) == 1:
         parser.print_help()
         exit()
 
     return parser.parse_args()
 
-def main():
-
-    
+def main():    
     args = parse_argument()
 
-    # print(args)
-
-    # 参数接收
     din = args.input
     dout = args.output
 
-    # 默认列
     rot_n = 1
     tilt_n = 2
     psi_n = 3
 
-    # 分界线识别与header信息暂存
     headlines_buffer = []
     with open(din, 'r') as starfile:
         line_number = 0
@@ -56,7 +47,6 @@ def main():
         if not found_data:
             raise FormatError()
 
-    # 角度信息替换
     file = pd.read_table(
         din, sep="\\s+", header=None, skiprows=headlines_n
     )
@@ -68,7 +58,6 @@ def main():
     pose_new_4 = pd.DataFrame(pose_new_4)
     file_new4.iloc[:, [rot_n, tilt_n, psi_n]] = pose_new_4
 
-    # header与角度信息整合保存
     df_headlines = pd.DataFrame(headlines_buffer)
     # df_headlines.to_csv("head_" + dout, sep="\t", index=False, header=False)
     df_combined = pd.concat([df_headlines, file_new4], ignore_index=True)
