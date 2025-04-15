@@ -56,6 +56,7 @@ conda activate cryopros
 Install the CryoPROS using pip with the following command:
 
 ```bash
+git clone https://github.com/zhengdihan/cryopros_dev.git
 cd cryoPROS_source_code
 pip install .
 ```
