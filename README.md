@@ -21,7 +21,7 @@ CryoPROS is free software developed in Python and is available as a Python packa
 
 ## Prerequisites
 
-- Python version 3.9, 3.10 or 3.12.
+- Python version 3.10 or 3.12.
 - NVIDIA CUDA library 9.2 or later installed in the user's environment.
 
 ## Dependencies
@@ -56,7 +56,7 @@ conda activate cryopros
 Install the CryoPROS using pip with the following command:
 
 ```bash
-git clone https://github.com/zhengdihan/cryopros_dev.git
+git clone https://github.com/mxhulab/cryopros.git
 cd cryoPROS_source_code
 pip install .
 ```
