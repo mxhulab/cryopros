@@ -26,7 +26,7 @@ cryopros-recondismic \
 --Apix 1.0 \                                 # Pixel size
 --init_volume_path latent_volume.mrc \       # Path to latent volume
 --volume_scale 10 \                          # Volume scale
---mask_path ./mask.npy \                     # Path to volume mask
+--mask_path ./mask.mrc \                     # Path to volume mask
 --data_path raw_particles.mrcs \             # Path to raw particle
 --param_path param.star \                    # Path to starfile
 --invert \                                   # Invert projection

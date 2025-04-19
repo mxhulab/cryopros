@@ -1,6 +1,6 @@
 ![banner](banner.png)
 
-# CryoPROS: addressing preferred orientation in single-particle cryo-EM through AI-generated auxiliary particles
+# CryoPROS: Correcting Misalignment Caused by Preferred Orientation Using AI-generated Auxiliary Particles.
 CryoPROS is a computational framework specifically designed to tackle misalignment errors caused by preferred orientation issues in single-particle cryo-EM. It addresses these challenges by co-refining synthesized and experimental data. By utilizing a self-supervised deep generative model, cryoPROS synthesizes auxiliary particles that effectively eliminate these misalignment errors through a co-refinement process.
 
 ## Video Tutorial
@@ -21,7 +21,7 @@ CryoPROS is free software developed in Python and is available as a Python packa
 
 ## Prerequisites
 
-- Python version 3.9, 3.10 or 3.12.
+- Python version 3.10 or 3.12.
 - NVIDIA CUDA library 9.2 or later installed in the user's environment.
 
 ## Dependencies
@@ -31,60 +31,35 @@ CryoPROS is free software developed in Python and is available as a Python packa
 - mrcfile>=1.3
 - scipy>=1.6.2
 - tqdm>=4.59
-- argparse>=1.4
 - numpy>=1.21.5
 - pandas>=1.3.2
 - opencv-python
 - matplotlib
 
-All dependencies except for torch and torchvision can be managed by Pip during the installation of cryoPROS.
-
 ## Preparation of CUDA Environment
 
 ### Creating and Activating a Conda Virtual Environment
 
-First, create a Conda virtual environment named `CRYOPROS_ENV` with Python 3.9, 3.10, or 3.12 by running the following command:
+First, create a Conda virtual environment named `cryopros` with Python 3.10 by running the following command:
 
 ```
-conda create -n CRYOPROS_ENV python=={x.x}
+conda create -n cryopros python==3.10
 ```
-
-Replace `{x.x}` with the desired Python version. Different Python versions correspond to different compatible ranges of PyTorch and CUDA versions. Specifically, Python 3.9 is compatible with PyTorch 1.7.1 to 2.3.0 and CUDA 9.2 to CUDA 12.1, Python 3.10 is compatible with PyTorch 1.12.1 to 2.3.0 and CUDA 10.2 to 12.1, and Python 3.12 is compatible with PyTorch 2.3.0 and CUDA 11.8 to 12.1.
 
 After creating the environment, activate it using:
 ```
-conda activate CRYOPROS_ENV
-```
-
-### Installing PyTorch and Torchvision
-
-Install the versions of PyTorch and torchvision that correspond to your specific environment, particularly matching your CUDA Driver Version. Use the following command, replacing `{x.x.x}` with the appropriate version numbers and `{xxx}` with your CUDA version:
-
-```
-pip install torch=={x.x.x} torchvision=={x.x.x} --extra-index-url https://download.pytorch.org/whl/cu{xxx}
-```
-
-For example, to install PyTorch 2.2.2 and torchvision 0.17.2 for CUDA Driver 10.2, you would use:
-```
-pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu102
+conda activate cryopros
 ```
 
 ## Installing CryoPROS
 
-You can download the precompiled package `cryoPROS-1.0-cp{xx}-cp{xx}-linux_x86_64.whl` from the [GitHub repository](https://github.com/mxhulab/crypros).
-
-Once downloaded, you can install the package using pip with the following command:
+Install the CryoPROS using pip with the following command:
 
 ```bash
-pip install cryoPROS-1.0-cp{xx}-cp{xx}-linux_x86_64.whl
+git clone https://github.com/mxhulab/cryopros.git
+cd cryoPROS_source_code
+pip install .
 ```
-
-Replace `{xx}` with the corresponding Python version. For example:
-- For Python 3.9: `cryoPROS-1.0-cp39-cp39-linux_x86_64.whl`
-- For Python 3.10: `cryoPROS-1.0-cp310-cp310-linux_x86_64.whl`
-- For Python 3.12: `cryoPROS-1.0-cp12-cp12-linux_x86_64.whl`
-
-Ensure you are in the correct directory containing the downloaded `.whl` file when executing the `pip install` command.
 
 ## Verifying Installation
 
@@ -108,9 +83,8 @@ CryoPROS consists of five executable binaries, as listed in the following table:
 
 | binary name | category | purpose | options/argument |
 | ------------ |--------- | --------- | --------------- |
-| `cryopros-train ` | core | Training a conditional VAE deep neural network model from an input initial volume and raw particles with given imaging parameters. | [see](#optionsarguments-of-cryopros-train) |
+| `cryopros-train` | core | Training a conditional VAE deep neural network model from an input initial volume and raw particles with given imaging parameters. | [see](#optionsarguments-of-cryopros-train) |
 | `cryopros-generate` | core | Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model. | [see](#optionsarguments-of-cryopros-generate) |
-| `cryopros-uniform-pose` | utility | Replacing poses in the input star file with poses sampled from a uniform distribution of spatial rotations. | [see](#optionsarguments-of-cryopros-uniform-pose) |
 | `cryopros-gen-mask` | utility | Generating a volume mask for a given input volume and corresponding threshold. | [see](#optionsarguments-of-cryopros-gen-mask) |
 | `cryopros-recondismic` | optional | Reconstructing the micelle/nanodisc density map from an input initial volume, a mask volume and raw particles with given imaging parameters. | [see](#optionsarguments-of-cryopros-recondismic) |
 
@@ -188,9 +162,8 @@ The expected result, `6idd_align_lp10.mrc`, can be downloaded from [this link](h
 ### Step 4: Iteration 1: Train the neural network in the generative module
 
 The particles `T00_HA_130K-Equalized-Particle-Stack.mrcs` and their refined poses, available at [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), are utilized to train the neural network within the generative module. This training starts with the initial latent volume, which can be accessed at [`6idd_align_lp10.mrc`](https://drive.google.com/drive/folders/1iORgW1831wCsg4wliRPq0pasIo2F-Ymo?usp=sharing), via command:
-```
+```shell
 cryopros-train \
---opt {CONDA_ENV_PATH}/lib/python3.10/site-packages/cryoPROS/options/train.json \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_1 \
 --box_size 256 \
@@ -203,8 +176,7 @@ cryopros-train \
 --dataloader_batch_size 8 \
 --dataloader_num_workers 0 \
 ```
-`{CONDA_ENV_PATH}` is the location of the `CRYOPROS_ENV`, the Conda environment created during the installation process. If [Anaconda 3](https://www.anaconda.com) is used to create the Conda environment, then `{CONDA_ENV_PATH}` should be set to `{ANACONDA_INSTALLATION_PATH}/envs/CRYOPROS_ENV`.
-Moreover, 4 GPUs are utilized for training in the aforementioned setting. Adjust the `--gpu_ids` option to accommodate your computing environment.
+4 GPUs are utilized for training in the aforementioned setting. Adjust the `--gpu_ids` option to accommodate your computing environment.
 
 Upon completion of the above command:
 - A directory named `./generate/HAtrimer_iteration_1` will be created.
@@ -215,33 +187,23 @@ The expected trained neural network (`HAtrimer_iteration_1.pth`, actually the `l
 
 ### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
 
-Auxiliary particles should display uniform poses. Therefore, the initial phase involves replacing the poses in the input star file, [`autorefinement.star`](https://drive.google.com/drive/folders/1VpVpBujJ0qlPEtWYzgfbkNF39oTVeIro?usp=sharing), with poses sampled from a uniform distribution of spatial rotations, which can be accomplised via:
-```
-cryopros-uniform-pose \
---input ./autorefinement.star \
---output ./unipose.star \
-```
-The expected `unipose.star` can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
-
-Next, the auxiliary particles are generated using the neural network that was trained in the preceding step, with the command
-```
+The auxiliary particles can be generated using the neural network that was trained in the preceding step, with the command
+```shell
 cryopros-generate \
 --model_path HAtrimer_iteration_1.pth \
+--param_path autorefinement.star \
 --output_path generated_HAtrimer_iteration_1 \
---gen_name HAtrimer_iteration_1_generated_particles.mrcs \
+--gen_name HAtrimer_iteration_1_generated_particles \
 --batch_size 50 \
 --box_size 256 \
 --Apix 1.31 \
---param_path unipose.star \
 --invert \
 --gen_mode 2 \
 ```
 
-Generated auxiliary particles are output in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.mrcs`.
+**The algorithm will only utilize the CTF parameters from `autorefinement.star` and will generate uniform poses to replace the original poses in `autorefinement.star`.**
 
-To update the particle root in the starfile for the generated particles from `unipose.star`, use the following command in vim:
-
-![rename](./images/ha_trimer/rename.png "rename")
+Generated auxiliary particles are saved in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.mrcs` with the corresponding star file in `./generated_HAtrimer_iteration_1/HAtrimer_iteration_1_generated_particles.star`.
 
 ### Step 6: Iteration 1: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
@@ -278,9 +240,8 @@ Note that the `2581.star` file should be placed in the proper path corresponding
 
 The training process follows the approach outlined in **Step 4**.
 
-```
+```shell
 cryopros-train \
---opt {CONDA_ENV_PATH}/lib/python3.10/site-packages/cryoPROS/options/train.json \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_2 \
 --box_size 256 \
@@ -305,25 +266,21 @@ The expected trained neural network (`HAtrimer_iteration_2.pth`, actually the `l
 
 The generating process follows the approach outlined in **Step 5**.
 
-```
+```shell
 cryopros-generate \
 --model_path HAtrimer_iteration_2.pth \
+--param_path autorefinement.star \
 --output_path generated_HAtrimer_iteration_2/ \
---gen_name HAtrimer_iteration_2_generated_particles.mrcs \
+--gen_name HAtrimer_iteration_2_generated_particles \
 --batch_size 50 \
 --box_size 256 \
 --Apix 1.31 \
---param_path unipose.star \
 --invert \
 --gen_mode 2 \
 ```
+**The algorithm will only utilize the CTF parameters from `autorefinement.star` and will generate uniform poses to replace the original poses in `autorefinement.star`.**
 
-Generated auxiliary particles are output in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.mrcs`.
-
-To update the particle root in the starfile for the generated particles from `unipose.star`, use the following command in vim:
-```
-:%s/HAtrimer_iteration_1_generated_particles.mrcs/HAtrimer_iteration_2_generated_particles.mrcs
-```
+Generated auxiliary particles are saved in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.mrcs` with the corresponding star file in `./generated_HAtrimer_iteration_2/HAtrimer_iteration_2_generated_particles.star`.
 
 ### Step 10: Iteration 2: Co-refinement using a combination of raw particles and synthesized auxiliary particles
 
@@ -380,7 +337,7 @@ The expected processed density map (`4826_refined.mrc`) can be downloaded from [
 ```
 $ cryopros-train -h
 usage: cryopros-train [-h] --box_size BOX_SIZE --Apix APIX --init_volume_path INIT_VOLUME_PATH --data_path
-                     DATA_PATH --param_path PARAM_PATH --gpu_ids GPU_IDS [GPU_IDS ...] [--invert] [-opt OPT]
+                     DATA_PATH --param_path PARAM_PATH --gpu_ids GPU_IDS [GPU_IDS ...] [--invert]
                      [--task_name TASK_NAME] [--volume_scale VOLUME_SCALE]
                      [--dataloader_batch_size DATALOADER_BATCH_SIZE]
                      [--dataloader_num_workers DATALOADER_NUM_WORKERS] [--lr LR] [--KL_weight KL_WEIGHT]
@@ -402,7 +359,6 @@ options:
   --gpu_ids GPU_IDS [GPU_IDS ...]
                         GPU IDs to utilize
   --invert              invert the image sign
-  --opt OPT             path to option JSON file
   --task_name TASK_NAME
                         task name
   --volume_scale VOLUME_SCALE
@@ -449,21 +405,6 @@ options:
   --nls NLS [NLS ...]   number of layers of the neural network
 ```
 
-<a name="cryopros-uniform-pose"></a>
-## Options/Arguments of `cryopros-uniform-pose`
-
-```
-$ cryopros-uniform-pose -h
-usage: cryopros-uniform-pose [-h] --input INPUT --output OUTPUT
-
-Replacing poses in the input star file with poses sampled from a uniform distribution of spatial rotations.
-
-options:
-  -h, --help       show this help message and exit
-  --input INPUT    input star file filename
-  --output OUTPUT  output star file filename
-```
-
 <a name="cryopros-gen-mask"></a>
 ## Options/Arguments of `cryopros-gen-mask`
 
@@ -489,7 +430,7 @@ options:
 $ cryopros-recondismic -h
 usage: cryopros-recondismic [-h] --box_size BOX_SIZE --Apix APIX --init_volume_path INIT_VOLUME_PATH --mask_path
                         MASK_PATH --data_path DATA_PATH --param_path PARAM_PATH --gpu_ids GPU_IDS [GPU_IDS ...]
-                        [--invert] [--opt OPT] [--task_name TASK_NAME] [--volume_scale VOLUME_SCALE]
+                        [--invert] [--task_name TASK_NAME] [--volume_scale VOLUME_SCALE]
                         [--dataloader_batch_size DATALOADER_BATCH_SIZE]
                         [--dataloader_num_workers DATALOADER_NUM_WORKERS] [--lr LR] [--KL_weight KL_WEIGHT]
                         [--max_iter MAX_ITER]
@@ -512,7 +453,6 @@ options:
   --gpu_ids GPU_IDS [GPU_IDS ...]
                         GPU IDs to utilize
   --invert              invert the image sign
-  --opt OPT             path to option JSON file
   --task_name TASK_NAME
                         task name
   --volume_scale VOLUME_SCALE

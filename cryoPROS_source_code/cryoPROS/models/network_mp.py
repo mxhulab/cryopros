@@ -117,7 +117,7 @@ class Reconstructor(nn.Module):
         else:
             self.volume = nn.Parameter(volume, requires_grad=False)
         
-        self.volume_scale = nn.Parameter(torch.Tensor([volume_scale]), requires_grad=update_volume_scale)
+        self.volume_scale = nn.Parameter(torch.Tensor([volume_scale]), requires_grad=bool(update_volume_scale))
         
         micelle = init_volume(box_size)
         self.micelle = nn.Parameter(micelle, requires_grad=True)
