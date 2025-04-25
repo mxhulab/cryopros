@@ -187,8 +187,9 @@ The expected trained neural network (`HAtrimer_iteration_1.pth`, actually the `l
 
 ### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
 
-The auxiliary particles can be generated using the neural network that was trained in the preceding step, with the command
+The auxiliary particles can be generated using the neural network that was trained in the preceding step, with the command (specifying GPU 0):
 ```shell
+export CUDA_VISIBLE_DEVICES=0
 cryopros-generate \
 --model_path HAtrimer_iteration_1.pth \
 --param_path autorefinement.star \
