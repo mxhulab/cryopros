@@ -183,6 +183,8 @@ Upon completion of the above command:
 - The training log will be stored at `./generate/HAtrimer_iteration_1/train.log`.
 - The trained neural networks will be saved under `./generate/HAtrimer_iteration_1/models/`.
 
+**Pay attention to the KL loss in the training log. If it remains very low (e.g., ~1e-9), please restart the training process. This often indicates a common issue called posterior collapse.**
+
 The expected trained neural network (`HAtrimer_iteration_1.pth`, actually the `latest.pth` under `./generate/HAtrimer_iteration_1/models/`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
 
 ### Step 5: Iteration 1: Generate auxiliary particles with the trained neural network
@@ -260,6 +262,8 @@ Upon completion of the above command:
 - A directory named `./generate/HAtrimer_iteration_2` will be created.
 - The training log will be stored at `./generate/HAtrimer_iteration_2/train.log`.
 - The trained neural networks will be saved under `./generate/HAtrimer_iteration_2/models/`.
+
+**Pay attention to the KL loss in the training log. If it remains very low (e.g., ~1e-9), please restart the training process. This often indicates a common issue called posterior collapse.**
 
 The expected trained neural network (`HAtrimer_iteration_2.pth`, actually the `latest.pth` under `./generate/HAtrimer_iteration_2/models/`) can be downloaded from [this link](https://drive.google.com/drive/folders/1dednUnZp-crUg_iXvl6czFUjAhFehjOq?usp=sharing).
 
