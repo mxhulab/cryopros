@@ -1,17 +1,7 @@
 """Parse CTF parameters from a RELION .star file"""
-
-import argparse
-import os
-import pickle
 import logging
 import numpy as np
-import site
-import sys
-site_packages_dir = site.getsitepackages()[0]
-package_path = os.path.join(site_packages_dir, "cryoPROS")
-sys.path.append(package_path)
-import utils.utils_ctf as ctf
-import utils.utils_starfile as starfile
+from .utils_starfile import Starfile
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +18,7 @@ HEADERS = [
 def read_ctf_from_starfile(fileroot, Apix, D):
     assert fileroot.endswith(".star"), "Input file must be .star file"
 
-    s = starfile.Starfile.load(fileroot)
+    s = Starfile.load(fileroot)
     N = len(s.df)
     logger.info(f"{N} particles")
 

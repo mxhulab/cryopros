@@ -2,13 +2,7 @@
 
 import logging
 import numpy as np
-import site
-import sys
-import os
-site_packages_dir = site.getsitepackages()[0]
-package_path = os.path.join(site_packages_dir, "cryoPROS")
-sys.path.append(package_path)
-import utils.utils_starfile as starfile
+from .utils_starfile import Starfile
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +26,7 @@ def R_from_relion(a: np.ndarray, b: np.ndarray, y: np.ndarray) -> np.ndarray:
 def read_pose_from_starfile(fileroot, Apix, D):
     assert fileroot.endswith(".star"), "Input file must be .star file"
 
-    s = starfile.Starfile.load(fileroot)
+    s = Starfile.load(fileroot)
     if s.relion31:  # Get image stats from data_optics table
         assert s.data_optics is not None
         assert (
