@@ -40,7 +40,7 @@ def main():
         volume = mrc.data
         v_size = mrc.voxel_size
 
-    mask = (volume > args.threshold).astype(np.uint8)
+    mask = (volume > args.threshold).astype(np.uint16)
     with mrcfile.new(args.result_path, overwrite = True) as mrc:
         mrc.set_data(mask)
         mrc.voxel_size = v_size

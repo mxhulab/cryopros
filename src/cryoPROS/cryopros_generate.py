@@ -1,13 +1,16 @@
 import numpy as np
-import torch
 import argparse
-import os
-import sys
 import mrcfile
+import sys
+import torch
+import queue
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from tqdm import tqdm
 from scipy.spatial.transform import Rotation as R
 from . import __version__
-from .utils import read_ctf_from_starfile, read_pose_from_starfile, generate_uniform_pose
+from .utils import generate_uniform_pose, read_para_from_starfile
 
 def parse_argument():
     parser = argparse.ArgumentParser(description = 'Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model.')
@@ -75,7 +78,7 @@ def parse_argument():
         '--gen_mode',
         type = int,
         default = 2,
-        help = 'storage model of the synthesized particles; mode 0 is int; mode 2 is float'
+        help = '(deprecated) storage model of the synthesized particles; mode 0 is int; mode 2 is float'
     )
     parser.add_argument(
         '--nls',
@@ -83,6 +86,13 @@ def parse_argument():
         nargs = '+',
         default = [2, 2, 4, 4],
         help = 'number of layers of the neural network'
+    )
+    parser.add_argument(
+        '--gpu_ids',
+        type = int,
+        nargs = '+',
+        default = [0],
+        help = 'GPU IDs used for particle generation'
     )
 
     if len(sys.argv) == 1:
@@ -95,86 +105,103 @@ def main():
     # Preparation
     # ----------------------------------------
     args = parse_argument()
-    print(args)
+    print('Received arguments:', args)
 
-    model_path = args.model_path
-    output_path = args.output_path
-    batch_size = args.batch_size
-    box_size = args.box_size
-    Apix = args.Apix
-    invert = args.invert
-    num_max = args.num_max
-    gen_name = args.gen_name
-    param_path = args.param_path
-    data_scale = args.data_scale
-    nls = args.nls
-    gen_mode = args.gen_mode
+    output_dir = Path(args.output_path)
+    output_dir.mkdir(parents = True, exist_ok = True)
+    print('Output directory:', str(output_dir))
+    assert output_dir, '`--output_path` should be a directory'
 
-    os.system('mkdir -p ' + output_path)
+    uniform_pose_path = output_dir / f'{args.gen_name}.star'
+    stack_path = f'{args.gen_name}.mrcs'
+    print('Generating star file & stack file:', str(uniform_pose_path), str(stack_path))
+    generate_uniform_pose(args.param_path, uniform_pose_path, stack_path)
 
-    uniform_pose_path = os.path.join(output_path, f'{gen_name}.star')
-    generate_uniform_pose(param_path, uniform_pose_path, gen_name)
+    Apix : float = args.Apix
+    box_size : int = args.box_size
+    rots, trans, ctfs = read_para_from_starfile(uniform_pose_path, Apix, box_size)
 
-    pose = read_pose_from_starfile(uniform_pose_path, Apix, box_size)
-    ctfs = read_ctf_from_starfile(uniform_pose_path, Apix, box_size)
-
-    rotations = pose[0]
-    trans = pose[1]
-
+    rots = rots.transpose(0, 2, 1) # for cryoDRGN
+    r = R.from_matrix(rots).as_quat()
+    metas = np.concatenate([r, trans], axis = 1)
     ctfs = ctfs[:, 2:]
 
-    rotations = rotations.transpose(0, 2, 1) # for cryoDRGN
-
-    r = R.from_matrix(rotations)
-    r = r.as_quat()
-    metas = np.concatenate([r, trans], axis=1)
-
-    rotations = torch.from_numpy(rotations).float()
+    rots = torch.from_numpy(rots).float()
     trans = torch.from_numpy(trans).float()
     ctfs = torch.from_numpy(ctfs).float()
     metas = torch.from_numpy(metas).float()
 
-    rotations = rotations[:num_max]
-    trans = trans[:num_max]
-    ctfs = ctfs[:num_max]
-    metas = metas[:num_max]
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.empty_cache()
 
     # ----------------------------------------
-    # load model
+    # Load model
     # ----------------------------------------
+    devices = []
+    if torch.cuda.is_available():
+        num_cuda_devices = torch.cuda.device_count()
+        valid_gpu_ids = [gpu_id for gpu_id in args.gpu_ids if 0 <= gpu_id < num_cuda_devices]
+        devices = [torch.device(f'cuda:{gpu_id}') for gpu_id in valid_gpu_ids]
+        torch.cuda.empty_cache()
+    if len(devices) == 0:
+        devices = [torch.device('cpu')]
+    print('Generating particles by device(s):', devices)
 
     from .models import HVAE
-    model = HVAE(nf = 64, nls = nls, z_dim = 16, box_size = box_size, Apix = Apix, invert = invert)
-    states = torch.load(model_path)
-    model.load_state_dict(states, strict = True)
-    model.eval()
+    states = torch.load(args.model_path)
+    models = []
+    for device in devices:
+        model = HVAE(nf = 64, nls = args.nls, z_dim = 16, box_size = box_size, Apix = Apix, invert = args.invert)
+        model.load_state_dict(states, strict = True)
+        model.eval()
+        for k, v in model.named_parameters():
+            v.requires_grad_(False)
+        model.to(device)
+        models.append(model)
 
-    for k, v in model.named_parameters():
-        v.requires_grad = False
+    # ----------------------------------------
+    # Generate
+    # ----------------------------------------
+    num_gen = min(args.num_max, len(rots))
+    batch_size : int = args.batch_size
+    num_iter = (num_gen + batch_size - 1) // batch_size
+    slices = [slice(k * batch_size, min((k + 1) * batch_size, num_gen)) for k in range(num_iter)]
+    data_scale : float = args.data_scale
+    print(f'Generating {num_gen} particles')
 
-    model = model.to(device)
+    with mrcfile.new_mmap(output_dir / stack_path, (num_gen, box_size, box_size), mrc_mode = 2, overwrite = True) as mrc:
+        mrc.voxel_size = Apix
+        offset = 1024 + mrc.header.nsymbt
 
-    num_gen = rotations.shape[0]
+    # 使用队列来为每个线程初始化它所持有的model和device
+    worker_indices = queue.Queue()
+    for worker_idx in range(len(devices)):
+        worker_indices.put(worker_idx)
+    worker_state = threading.local()
 
-    print(f"Generating {num_gen} particles.")
+    def init_generate_worker():
+        worker_idx = worker_indices.get()
+        worker_state.model = models[worker_idx]
+        worker_state.device = devices[worker_idx]
 
-    num_iter = num_gen // batch_size if num_gen % batch_size == 0 else num_gen // batch_size + 1
+    def generate_batch(slc):
+        model = worker_state.model
+        device = worker_state.device
 
-    with mrcfile.new_mmap(os.path.join(output_path, f'{gen_name}.mrcs'), shape=(num_gen, box_size, box_size), mrc_mode=gen_mode, overwrite=True) as mrc:
-        for k in tqdm(range(num_iter)):
+        ctf = ctfs[slc].to(device)
+        rot = rots[slc].to(device)
+        tran = trans[slc].to(device)
+        meta = metas[slc].to(device)
 
-            ctf = ctfs[k*batch_size:(k+1)*batch_size].to(device)
-            rotation = rotations[k*batch_size:(k+1)*batch_size].to(device)
-            tran = trans[k*batch_size:(k+1)*batch_size].to(device)
-            meta = metas[k*batch_size:(k+1)*batch_size].to(device)
+        with torch.no_grad():
+            par_gen = model.generate(rotation = rot, trans = tran, ctf_para = ctf, meta = meta)
+        par_gen = par_gen.detach().cpu().squeeze().numpy().astype(np.float32) / data_scale
+        return par_gen
 
-            par_gen = model.generate(rotation=rotation, trans=tran, ctf_para=ctf, meta=meta)
-            par_gen = par_gen.detach().cpu().squeeze().numpy().astype(np.float32) / data_scale
+    with open(output_dir / stack_path, 'r+b') as fout:
+        fout.seek(offset)
+        with ThreadPoolExecutor(max_workers = len(devices), initializer = init_generate_worker) as executor:
+            for par_gen in tqdm(executor.map(generate_batch, slices), total = num_iter, desc = 'Generating particles ...'):
+                par_gen.tofile(fout)
 
-            mrc.data[k*batch_size:(k+1)*batch_size] = par_gen
 
 if __name__ == '__main__':
     main()

@@ -28,7 +28,7 @@ dependencies = [
     "scipy>=1.6.2",
     "tqdm>=4.59",
     "numpy>=1.21.5",
-    "starfile>0.4.1,<0.5",
+    "starfile==0.4.12",
     "pandas<2.2",
     "matplotlib"
 ]

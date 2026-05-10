@@ -1,9 +1,7 @@
-from .utils_read_star_ctf import read_ctf_from_starfile
-from .utils_read_star_pose import read_pose_from_starfile
-from .utils_pose import generate_uniform_pose
+from .pose import generate_uniform_pose
+from .star import read_para_from_starfile
 
 __all__ = [
-    'read_ctf_from_starfile',
-    'read_pose_from_starfile',
-    'generate_uniform_pose'
+    'generate_uniform_pose',
+    'read_para_from_starfile',
 ]
