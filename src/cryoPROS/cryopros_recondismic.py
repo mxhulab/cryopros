@@ -1,9 +1,5 @@
 import argparse
-import json
-import mrcfile
-import os
 import sys
-from math import ceil
 from importlib import resources
 from . import __version__, options
 
@@ -114,8 +110,10 @@ def parse_argument():
 
 def main():
     # Setup options, directories, logger
-    args = parse_argument()
+    import json
     from .utils import option
+
+    args = parse_argument()
     opt = option.parse(args)
     option.mkdirs(opt)
     option.save(opt)
@@ -139,6 +137,7 @@ def main():
 
     # Dataset and DataLoader
     from .data import DatasetMP
+    from math import ceil
     from torch.utils.data import DataLoader
 
     for phase, dataset_opt in opt['datasets'].items():
@@ -175,6 +174,8 @@ def main():
 
 
     # Train
+    import mrcfile
+    from pathlib import Path
     current_epoch = 0
     current_step = 0
     max_iter = opt['train'].get('max_iter', 30000)
@@ -184,29 +185,27 @@ def main():
 
         for train_data in train_loader:
             current_step += 1
-            model.update_learning_rate(current_step)
             model.feed_data(train_data)
             model.optimize_parameters(current_step)
+            model.update_learning_rate()
 
-            if current_step % opt['train'].get('checkpoint_print', 200) == 0:
+            if current_step % opt['train'].get('checkpoint_print', 500) == 0:
                 logs = model.current_log()
-                message = f'<current epoch:{current_epoch:3d}, iter:{current_step:8,d}, lr:{model.current_learning_rate():.3e}> '
+                message = f'<epoch:{current_epoch:3d}, iter:{current_step:8,d}, lr:{model.current_learning_rate():.3e}> '
                 for k, v in logs.items():
                     message += f'{k}: {v:.3e} '
                 logger.info(message)
 
             if current_step % opt['train'].get('checkpoint_test', 5000) == 0:
-                volume_dir = opt['path']['models']
                 model.test()
                 visuals = model.current_visuals()
 
                 volume = visuals['volume'].numpy().astype(np.float32)
-                save_path = os.path.join(volume_dir, f'{current_step}.mrc')
+                save_path = Path(opt['path']['models']) / f'{current_step}.mrc'
                 with mrcfile.new(save_path, overwrite = True) as mrc:
                     mrc.set_data(volume)
                     mrc.voxel_size = opt['Apix']
 
-            exit()
             if current_step > max_iter:
                 break
 
@@ -214,7 +213,8 @@ def main():
             break
 
     logger.info('End of training')
-
+    model.save('latest')
+    logger.info('End of training')
 
 if __name__ == '__main__':
     main()

@@ -1,5 +1,3 @@
-import mrcfile
-import numpy as np
 import argparse
 import sys
 from . import __version__
@@ -35,6 +33,9 @@ def parse_argument():
 
 def main():
     args = parse_argument()
+
+    import mrcfile
+    import numpy as np
 
     with mrcfile.open(args.volume_path, permissive = True) as mrc:
         volume = mrc.data

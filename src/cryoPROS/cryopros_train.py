@@ -1,36 +1,102 @@
-import numpy as np
 import argparse
-import math
-import os
-import random
-import logging
-import torch
 import sys
-from torch.utils.data import DataLoader
 from importlib import resources
-from .data import Dataset
-from .models import HVAEModel
-from . import options
-resources.files(options)
+from . import __version__, options
 
-def parse_argument(json_path):
-    parser = argparse.ArgumentParser(description='Training a conditional VAE deep neural network model from an input initial volume and raw particles with given imaging parameters.')
+def parse_argument():
+    parser = argparse.ArgumentParser(description = 'Training a conditional VAE deep neural network model from an input initial volume and raw particles with given imaging parameters.')
+    json_path = str(resources.files(options) / 'train.json')
 
-    parser.add_argument('--box_size'        , type=int  , help='box size'                , required = True)
-    parser.add_argument('--Apix'            , type=float, help='pixel size in Angstrom'  , required = True)
-    parser.add_argument('--init_volume_path', type=str  , help='input inital volume path', required = True)
-    parser.add_argument('--data_path'       , type=str  , help='input raw particles path', required = True)
-    parser.add_argument('--param_path'      , type=str  , help='path of star file which contains the imaging parameters', required = True)
-    parser.add_argument('--gpu_ids', nargs='+', type=int, help='GPU IDs to utilize', required = True)
-    parser.add_argument('--invert', action='store_true', help='invert the image sign')
-    parser.add_argument('--opt'                   , type=str  , default=json_path , help='path to option JSON file')
-    parser.add_argument('--task_name'             , type=str  , default='cryoPROS', help='task name')
-    parser.add_argument('--volume_scale'          , type=float, default=50.0      , help='scale factor')
-    parser.add_argument('--dataloader_batch_size' , type=int  , default=16        , help='batch size to load data')
-    parser.add_argument('--dataloader_num_workers', type=int  , default=0         , help='number of workers to load data')
-    parser.add_argument('--lr'                    , type=float, default=1e-4      , help='learning rate')
-    parser.add_argument('--KL_weight'             , type=float, default=1e-4      , help='KL weight')
-    parser.add_argument('--max_iter'              , type=int  , default=30000     , help='max number of iterations')
+    parser.add_argument(
+        '-v', '--version',
+        action = 'version',
+        version = f'%(prog)s {__version__}'
+    )
+    parser.add_argument(
+        '--box_size',
+        type = int,
+        required = True,
+        help = 'box size'
+    )
+    parser.add_argument(
+        '--Apix',
+        type = float,
+        required = True,
+        help = 'pixel size in Angstrom'
+    )
+    parser.add_argument(
+        '--init_volume_path',
+        required = True,
+        help = 'input inital volume path'
+    )
+    parser.add_argument(
+        '--data_path',
+        required = True,
+        help = 'input raw particles path'
+    )
+    parser.add_argument(
+        '--param_path',
+        required = True,
+        help = 'path of star file which contains the imaging parameters'
+    )
+    parser.add_argument(
+        '--gpu_ids',
+        type = int,
+        nargs = '+',
+        default = [0],
+        help = 'GPU IDs to utilize'
+    )
+    parser.add_argument(
+        '--invert',
+        action = 'store_true',
+        help = 'invert the image sign'
+    )
+    parser.add_argument(
+        '--opt',
+        default = json_path,
+        help = 'path to option JSON file'
+    )
+    parser.add_argument(
+        '--task_name',
+        default = 'cryoPROS',
+        help = 'task name'
+    )
+    parser.add_argument(
+        '--volume_scale',
+        type = float,
+        default = 50.0,
+        help = 'scale factor'
+    )
+    parser.add_argument(
+        '--dataloader_batch_size',
+        type = int,
+        default = 16,
+        help = 'batch size to load data'
+    )
+    parser.add_argument(
+        '--dataloader_num_workers',
+        type = int,
+        default = 0,
+        help = 'number of workers to load data'
+    )
+    parser.add_argument(
+        '--lr',
+        type = float,
+        default = 1e-4,
+        help = 'learning rate'
+    )
+    parser.add_argument(
+        '--KL_weight',
+        type = float,
+        default = 1e-4,
+        help = 'KL weight'
+    )
+    parser.add_argument(
+        '--max_iter',
+        type = int,
+        default = 30000,
+        help = 'max number of iterations'
+    )
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -38,174 +104,120 @@ def parse_argument(json_path):
     return parser.parse_args()
 
 def main():
-    # ----------------------------------------
-    # Prepare opt
-    # ----------------------------------------
+    # Setup options, directories, logger
+    import json
+    from .utils import option
+
     args = parse_argument()
-
-    from .utils import utils_logger
-    from .utils import utils_image as util
-    from .utils import utils_option as option
-
     opt = option.parse(args)
-
-    util.mkdirs((path for key, path in opt['path'].items() if 'pretrained' not in key))
-
-    current_step = 0
-
-    # --<--<--<--<--<--<--<--<--<--<--<--<--<-
-
-    # ----------------------------------------
-    # save opt to  a '../option.json' file
-    # ----------------------------------------
+    option.mkdirs(opt)
     option.save(opt)
+    logger = option.get_logger(opt)
+    logger.info('training options:' + json.dumps(opt, indent = 2))
 
-    # ----------------------------------------
-    # return None for missing key
-    # ----------------------------------------
-    opt = option.dict_to_nonedict(opt)
 
-    # ----------------------------------------
-    # configure logger
-    # ----------------------------------------
-    logger_name = 'train'
-    utils_logger.logger_info(logger_name, os.path.join(opt['path']['log'], logger_name+'.log'))
-    logger = logging.getLogger(logger_name)
-    logger.info(option.dict2str(opt))
+    # Random seed
+    import random
+    import numpy as np
+    import torch
 
-    # ----------------------------------------
-    # seed
-    # ----------------------------------------
-    seed = opt['train']['manual_seed']
-    if seed is None:
-        seed = random.randint(1, 10000)
-    logger.info('Random seed: {}'.format(seed))
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    seed = opt['train'].get('manual_seed', None)
+    if seed is not None:
+        logger.info(f'Setting up random seed: {seed}')
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
-    '''
-    # ----------------------------------------
-    # Step--2 (creat dataloader)
-    # ----------------------------------------
-    '''
 
-    # ----------------------------------------
-    # 1) create_dataset
-    # 2) creat_dataloader for train and test
-    # ----------------------------------------
+    # Dataset and DataLoader
+    from .data import Dataset
+    from math import ceil
+    from torch.utils.data import DataLoader
+
     for phase, dataset_opt in opt['datasets'].items():
-        if phase == 'train':
-            train_set = Dataset(dataset_opt)
-            train_size = int(math.ceil(len(train_set) / dataset_opt['dataloader_batch_size']))
-            logger.info('Number of train images: {:,d}, iters: {:,d}'.format(len(train_set), train_size))
-            train_loader = DataLoader(train_set,
-                                      batch_size=dataset_opt['dataloader_batch_size'],
-                                      shuffle=dataset_opt['dataloader_shuffle'],
-                                      num_workers=dataset_opt['dataloader_num_workers'],
-                                      drop_last=True,
-                                      pin_memory=True)
-        elif phase == 'test':
-            test_set = Dataset(dataset_opt)
-            test_loader = DataLoader(test_set, batch_size=1,
-                                     shuffle=False, num_workers=1,
-                                     drop_last=False, pin_memory=True)
-        else:
-            raise NotImplementedError("Phase [%s] is not recognized." % phase)
+        if phase != 'train':
+            raise NotImplementedError(f'Phase [{phase}] is not recognized')
 
-    '''
-    # ----------------------------------------
-    # Step--3 (initialize model)
-    # ----------------------------------------
-    '''
+        train_set = Dataset(dataset_opt)
+        train_size = int(ceil(len(train_set) / dataset_opt['dataloader_batch_size']))
+        logger.info(f'Number of train images: {len(train_set)}, iters: {train_size}')
+        train_loader = DataLoader(
+            train_set,
+            batch_size = dataset_opt.get('dataloader_batch_size', None),
+            shuffle = dataset_opt.get('dataloader_shuffle', None),
+            num_workers = dataset_opt.get('dataloader_num_workers', None),
+            drop_last = True,
+            pin_memory = True
+        )
 
+
+    # Initialize model
+    if torch.cuda.is_available() and opt['gpu_ids'] is not None:
+        logger.info(f'Specifies GPU ids: {opt["gpu_ids"]}')
+        num_cuda_devices = torch.cuda.device_count()
+        opt['gpu_ids'] = [gpu_id for gpu_id in opt['gpu_ids'] if 0 <= gpu_id < num_cuda_devices]
+        logger.info(f'Valid GPU ids: {opt["gpu_ids"]}')
+    if not opt['gpu_ids']:
+        raise RuntimeError('Require GPU to perform cryopros-train')
+
+    from .models import HVAEModel
     model = HVAEModel(opt)
-
-    logger.info(model.info_network())
+    logger.info('Network architecture:' + model.info_network())
     model.init_train()
-    logger.info(model.info_params())
+    logger.info('Network parameter info:' + model.info_params())
 
-    '''
-    # ----------------------------------------
-    # Step--4 (main training)
-    # ----------------------------------------
-    '''
 
-    max_iter = opt['train']['max_iter'] if opt['train']['max_iter'] is not None else 30000
-    break_flag = False
+    # Train
+    import cv2
+    from pathlib import Path
+    current_epoch = 0
+    current_step = 0
+    max_iter = opt['train'].get('max_iter', 30000)
 
-    for epoch in range(1000000):  # keep running
-        for i, train_data in enumerate(train_loader):
+    while True:
+        current_epoch += 1
 
+        for train_data in train_loader:
             current_step += 1
-
-            # -------------------------------
-            # 1) feed patch pairs
-            # -------------------------------
             model.feed_data(train_data)
-
-            # -------------------------------
-            # 2) optimize parameters
-            # -------------------------------
             model.optimize_parameters(current_step)
+            model.update_learning_rate()
 
-            # -------------------------------
-            # 3) update learning rate
-            # -------------------------------
-            model.update_learning_rate(current_step)
-
-            # --------------------------
-            # 4) training information
-            # --------------------------
-            if current_step % opt['train']['checkpoint_print'] == 0:
-                logs = model.current_log()  # such as loss
-                message = '<epoch:{:3d}, iter:{:8,d}, lr:{:.3e}> '.format(epoch, current_step, model.current_learning_rate())
-                for k, v in logs.items():  # merge log information into message
-                    message += '{:s}: {:.3e} '.format(k, v)
+            if current_step % opt['train'].get('checkpoint_print', 1000) == 0:
+                logs = model.current_log()
+                message = f'<epoch:{current_epoch:3d}, iter:{current_step:8,d}, lr:{model.current_learning_rate():.3e}> '
+                for k, v in logs.items():
+                    message += f'{k}: {v:.3e} '
                 logger.info(message)
 
-            # -------------------------------
-            # 5) save model
-            # -------------------------------
-            if current_step % opt['train']['checkpoint_save'] == 0:
-                logger.info('Saving the model.')
+            if current_step % opt['train'].get('checkpoint_save', 10000) == 0:
+                logger.info('Saving the model')
                 model.save(current_step)
 
-            # -------------------------------
-            # 6) testing
-            # -------------------------------
-            if current_step % opt['train']['checkpoint_test'] == 0:
-
+            if current_step % opt['train'].get('checkpoint_test', 10000) == 0:
                 for i in range(opt['num_gen']):
-
-                    img_name = '{:04d}'.format(i + 1)
-                    img_dir = os.path.join(opt['path']['images'], img_name)
-                    util.mkdir(img_dir)
-
                     model.test()
-
                     visuals = model.current_visuals()
-                    img_G = util.tensor2uint_rescale(visuals['img_G'])
+                    img = visuals['img_G']
 
-                    # -----------------------
-                    # save
-                    # -----------------------
-                    save_img_G_path = os.path.join(img_dir, '{:s}_{:d}_G.png'.format(img_name, current_step))
-                    util.imsave(img_G, save_img_G_path)
+                    img = (img - img.min()) / (img.max() - img.min())
+                    img = img.data.squeeze().clamp_(0, 1).numpy()
+                    img = np.around(img * 255).astype(np.uint8)
+                    assert img.ndim == 2
+
+                    img_path = Path(opt['path']['images']) / f'{i + 1:04d}_{current_step}_G.png'
+                    cv2.imwrite(str(img_path), img)
 
             if current_step > max_iter:
-                break_flag = True
-
-            if break_flag:
                 break
 
-        if break_flag:
+        if current_step > max_iter:
             break
 
-    logger.info('Saving the final model.')
+    logger.info('Saving the final model')
     model.save('latest')
-    logger.info('End of training.')
+    logger.info('End of training')
 
 if __name__ == '__main__':
     main()

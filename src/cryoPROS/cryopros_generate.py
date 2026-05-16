@@ -1,16 +1,6 @@
-import numpy as np
 import argparse
-import mrcfile
 import sys
-import torch
-import queue
-import threading
-from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
-from tqdm import tqdm
-from scipy.spatial.transform import Rotation as R
 from . import __version__
-from .utils import generate_uniform_pose, read_para_from_starfile
 
 def parse_argument():
     parser = argparse.ArgumentParser(description = 'Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model.')
@@ -105,6 +95,12 @@ def main():
     args = parse_argument()
     print('Received arguments:', args)
 
+    import numpy as np
+    import torch
+    from pathlib import Path
+    from .utils import generate_uniform_pose, read_para_from_starfile
+    from scipy.spatial.transform import Rotation as R
+
     output_dir = Path(args.output_path)
     output_dir.mkdir(parents = True, exist_ok = True)
     print('Output directory:', str(output_dir))
@@ -162,12 +158,15 @@ def main():
     data_scale : float = args.data_scale
     print(f'Generating {num_gen} particles')
 
+    import mrcfile
     with mrcfile.new_mmap(output_dir / stack_path, (num_gen, box_size, box_size), mrc_mode = 2, overwrite = True) as mrc:
         mrc.voxel_size = Apix
         offset = 1024 + mrc.header.nsymbt
 
     # 使用队列来为每个线程初始化它所持有的model和device
-    worker_indices = queue.Queue()
+    import threading
+    from queue import Queue
+    worker_indices = Queue()
     for worker_idx in range(len(devices)):
         worker_indices.put(worker_idx)
     worker_state = threading.local()
@@ -191,6 +190,8 @@ def main():
         par_gen = par_gen.detach().cpu().squeeze().numpy().astype(np.float32) / data_scale
         return par_gen
 
+    from concurrent.futures import ThreadPoolExecutor
+    from tqdm import tqdm
     with open(output_dir / stack_path, 'r+b') as fout:
         fout.seek(offset)
         with ThreadPoolExecutor(max_workers = len(devices), initializer = init_generate_worker) as executor:

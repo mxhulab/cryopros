@@ -1,51 +1,48 @@
-import torch
 import numpy as np
-import torch.utils.data as data
 import mrcfile
+import torch
+from torch.utils.data import Dataset
 from scipy.spatial.transform import Rotation as R
 from ..utils import read_para_from_starfile
 
-class Dataset(data.Dataset):
+class Dataset(Dataset):
     def __init__(self, opt):
-        super(Dataset, self).__init__()
+        super().__init__()
         self.opt = opt
         self.data_path = opt['data_path']
         self.data_scale = opt['data_scale']
         self.param_path = opt['param_path']
 
-        with mrcfile.mmap(self.data_path, mode='r', permissive=True) as mrc:
+        with mrcfile.mmap(self.data_path, mode = 'r', permissive = True) as mrc:
             self.data = mrc.data
 
-        if self.param_path.endswith(".star"):
+        if self.param_path.endswith('.star'):
             rotations, trans, ctfs = read_para_from_starfile(self.param_path, opt['Apix'], opt['box_size'])
 
         ctfs = ctfs[:, 2:]
         rotations = rotations.transpose(0, 2, 1) # cryoDRGN
         r = R.from_matrix(rotations)
         r = r.as_quat()
-        metas = np.concatenate([r, trans], axis=1)
+        metas = np.concatenate([r, trans], axis = 1)
 
         self.rotations = torch.from_numpy(rotations).float()
         self.trans = torch.from_numpy(trans).float()
         self.ctfs = torch.from_numpy(ctfs).float()
         self.metas = torch.from_numpy(metas).float()
 
-        assert self.data.shape[0] == self.rotations.shape[0]
+        assert self.data.shape[0] >= self.rotations.shape[0]
+        self.n = len(self.rotations)
 
-        n_max = opt['n_max']
-        if n_max is not None:
-            self.data = self.data[:n_max]
-            self.rotations = self.rotations[:n_max]
-            self.trans = self.trans[:n_max]
-            self.ctfs = self.ctfs[:n_max]
-            self.metas = self.metas[:n_max]
+        if opt['n_max'] is not None and opt['n_max'] < self.n:
+            self.n = opt['n_max']
 
     def __getitem__(self, index):
-        img = self.data[index].copy().astype(np.float32)
+        assert 0 <= index < self.n
 
-        img = np.expand_dims(img, axis=0)
-        img = torch.from_numpy(np.ascontiguousarray(img)).float()
-        img = self.data_scale * img
+        img = np.array(self.data[index], dtype = np.float32, copy = True)
+        img *= self.data_scale
+        img = np.expand_dims(img, axis = 0)
+        img = torch.from_numpy(img)
 
         ctf = self.ctfs[index]
         rotation = self.rotations[index]
@@ -55,4 +52,4 @@ class Dataset(data.Dataset):
         return {'img': img, 'ctf': ctf, 'rotation': rotation, 'trans': trans, 'meta': meta}
 
     def __len__(self):
-        return self.data.shape[0]
+        return self.n
