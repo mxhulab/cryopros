@@ -18,7 +18,7 @@ def compute_ctf(freqs, dfu, dfv, dfang, volt, cs, w, phase_shift=0, bfactor=None
         phase_shift (float or Bx1 tensor): degrees
         bfactor (float or Bx1 tensor): envelope fcn B-factor (Angstrom^2)
     """
-        
+
     assert freqs.shape[-1] == 2
     # convert units
     volt = volt * 1000
@@ -40,41 +40,41 @@ def compute_ctf(freqs, dfu, dfv, dfang, volt, cs, w, phase_shift=0, bfactor=None
     ctf = (1 - w**2) ** 0.5 * torch.sin(gamma) - w * torch.cos(gamma)
     if bfactor is not None:
         ctf *= torch.exp(-bfactor / 4 * s2)
-    
+
     return ctf
 
 
 def discrete_radon_transform_3d(volume, rotation):
     b = volume.shape[0]
-    
+
     zeros = torch.zeros(b, 3, 1).to(volume.device)
     theta = torch.cat([rotation, zeros], dim=2)
 
     grid = F.affine_grid(theta, size=volume.shape)
     volume_rot = F.grid_sample(volume, grid, mode='bilinear')
-    
+
     volume_rot = volume_rot.permute(0, 1, 3, 4, 2)
     proj = volume_rot.sum(dim=-1)
-    
+
     return proj
 
 
 def translation_2d(proj, trans):
     """
     Input:
-        proj: Bx1xbsxbs tensor 
+        proj: Bx1xbsxbs tensor
         trans: Bx2 tensor
     """
-    
+
     b = trans.shape[0]
-    
+
     eye = torch.eye(2).unsqueeze(0).repeat(b, 1, 1).to(proj.device)
     trans = trans.unsqueeze(-1)
     theta = torch.cat([eye, trans], dim=2)
 
     grid = F.affine_grid(theta, size=proj.shape)
     proj_trans = F.grid_sample(proj, grid, mode='bicubic')
-    
+
     return proj_trans
 
 
@@ -84,18 +84,18 @@ def convolve_ctf(proj, ctf):
     Fproj = torch.fft.ifftshift(Fproj, dim=(-2, -1))
     proj = torch.fft.ifft2(Fproj)
     proj = proj.real
-    
+
     return proj
 
 
 def init_volume(box_size):
     volume = torch.zeros(box_size, box_size, box_size)
-    volume[box_size // 4 : 3 * box_size // 4, 
+    volume[box_size // 4 : 3 * box_size // 4,
            box_size // 4 : 3 * box_size // 4,
            box_size // 4 : 3 * box_size // 4] = torch.ones(box_size//2, box_size//2, box_size//2)
-    
+
     volume = volume / torch.norm(volume)
-    
+
     return volume
 
 
@@ -103,33 +103,33 @@ class Reconstructor(nn.Module):
     def __init__(self, box_size=256, Apix=1.31, invert=True, init_volume_path=None,
                  volume_scale=1, update_volume_scale=False, update_volume=False, mask_path=None):
         super(Reconstructor, self).__init__()
-        
+
         if init_volume_path is not None:
             with mrcfile.open(init_volume_path, permissive=True) as mrc:
                 volume = mrc.data
             volume = torch.from_numpy(volume.astype(np.float32))
         else:
             volume = init_volume(box_size)
-        
+
         volume = volume / torch.norm(volume)
         if update_volume:
             self.volume = nn.Parameter(volume, requires_grad=True)
         else:
             self.volume = nn.Parameter(volume, requires_grad=False)
-        
+
         self.volume_scale = nn.Parameter(torch.Tensor([volume_scale]), requires_grad=bool(update_volume_scale))
-        
+
         micelle = init_volume(box_size)
         self.micelle = nn.Parameter(micelle, requires_grad=True)
-        
+
         if mask_path is not None:
-            with mrcfile.open(mask_path, permissive=True) as mrc:
-                mask = mrc.data
+            with mrcfile.mmap(mask_path, permissive=True) as mrc:
+                mask = np.array(mrc.data, dtype = np.float32)
         else:
-            mask = np.ones((box_size, box_size, box_size))
-        mask = torch.from_numpy(mask).float()
-        self.mask = nn.Parameter(mask, requires_grad=False)                
-                
+            mask = np.ones((box_size, box_size, box_size), dtype = np.float32)
+        mask = torch.from_numpy(mask)
+        self.mask = nn.Parameter(mask, requires_grad=False)
+
         freqs = (
         np.stack(
             np.meshgrid(
@@ -147,24 +147,24 @@ class Reconstructor(nn.Module):
 
 
     def forward(self, img, rotation, trans, ctf_para):
-    
+
         b = rotation.shape[0]
         volume = self.get_volume()
         volume = volume.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1, 1)
         proj = discrete_radon_transform_3d(volume, rotation)
         proj = translation_2d(proj, 2 * trans)
-        
+
         freqs = self.freqs.to(img.device).repeat(b, 1, 1)
         ctf = compute_ctf(freqs, *torch.split(ctf_para, 1, 1))
         ctf = ctf.reshape(b, 1, self.box_size, self.box_size)
-        
+
         proj = convolve_ctf(proj, ctf)
-        
+
         if self.invert:
             proj = - proj
-            
+
         loss = self.distortion_loss(proj, img).unsqueeze(0)
-        
+
         return loss
 
     def distortion_loss(self, x, y):
@@ -172,4 +172,4 @@ class Reconstructor(nn.Module):
 
     def get_volume(self):
         return (1 - self.mask) * self.micelle + self.volume * self.volume_scale
-    
+

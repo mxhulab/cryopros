@@ -23,10 +23,12 @@ def R_from_relion(a: np.ndarray, b: np.ndarray, y: np.ndarray) -> np.ndarray:
     R[2, 1] *= -1
     return R
 
-def read_para_from_starfile(fpath : Path, Apix : float, D : int):
+def read_para_from_starfile(fpath, Apix : float, D : int):
     '''
     Parse rotations, tranlations and CTF parameters from RELION .star file
     '''
+    if not isinstance(fpath, Path):
+        fpath = Path(fpath)
     assert fpath.suffix == '.star'
     star = starfile.read(fpath)
 

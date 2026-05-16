@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import torch.utils.data as data
 import mrcfile
-from ..utils import read_ctf_from_starfile, read_pose_from_starfile
+from ..utils import read_para_from_starfile
 
 class DatasetMP(data.Dataset):
     def __init__(self, opt):
@@ -15,16 +15,10 @@ class DatasetMP(data.Dataset):
             self.data = mrc.data
 
         if self.param_path.endswith(".star"):
-            pose = read_pose_from_starfile(self.param_path, opt['Apix'], opt['box_size'])
-            ctfs = read_ctf_from_starfile(self.param_path, opt['Apix'], opt['box_size'])
-
-        rotations = pose[0]
-        trans = pose[1]
+            rotations, trans, ctfs = read_para_from_starfile(self.param_path, opt['Apix'], opt['box_size'])
 
         ctfs = ctfs[:, 2:]
-
         rotations = rotations.transpose(0, 2, 1) # for cryoDRGN
-
         self.rotations = torch.from_numpy(rotations).float()
         self.trans = torch.from_numpy(trans).float()
         self.ctfs = torch.from_numpy(ctfs).float()
@@ -50,6 +44,3 @@ class DatasetMP(data.Dataset):
 
     def __len__(self):
         return self.data.shape[0]
-
-
-

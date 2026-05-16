@@ -101,9 +101,7 @@ def parse_argument():
     return parser.parse_args()
 
 def main():
-    # ----------------------------------------
     # Preparation
-    # ----------------------------------------
     args = parse_argument()
     print('Received arguments:', args)
 
@@ -132,9 +130,7 @@ def main():
     metas = torch.from_numpy(metas).float()
 
 
-    # ----------------------------------------
     # Load model
-    # ----------------------------------------
     devices = []
     if torch.cuda.is_available():
         num_cuda_devices = torch.cuda.device_count()
@@ -157,9 +153,8 @@ def main():
         model.to(device)
         models.append(model)
 
-    # ----------------------------------------
+
     # Generate
-    # ----------------------------------------
     num_gen = min(args.num_max, len(rots))
     batch_size : int = args.batch_size
     num_iter = (num_gen + batch_size - 1) // batch_size

@@ -1,0 +1,85 @@
+import json
+import logging
+import os
+from datetime import datetime
+from pathlib import Path
+from collections import OrderedDict
+
+def parse(args):
+    # Read a json file with '//' line comment
+    opt_path = args.opt
+    json_str = ''
+    with open(opt_path) as f:
+        for line in f:
+            line = line.split('//')[0] + '\n'
+            json_str += line
+    opt = json.loads(json_str, object_pairs_hook = OrderedDict)
+
+    # Write args to opt
+    opt['box_size'] = args.box_size
+    opt['Apix'] = args.Apix
+    opt['init_volume_path'] = args.init_volume_path
+    if hasattr(args, 'mask_path'): opt['mask_path'] = args.mask_path
+    opt['gpu_ids'] = args.gpu_ids
+    opt['invert'] = args.invert
+    opt['opt_path'] = args.opt
+    opt['task'] = args.task_name
+    opt['volume_scale'] = args.volume_scale
+    opt['datasets']['train']['data_path'] = args.data_path
+    opt['datasets']['train']['param_path'] = args.param_path
+    opt['datasets']['train']['dataloader_batch_size'] = args.dataloader_batch_size
+    opt['datasets']['train']['dataloader_num_workers'] = args.dataloader_num_workers
+    opt['train']['optimizer_lr'] = args.lr
+    if hasattr(args, 'KL_weight'): opt['train']['KL_weight'] = args.KL_weight
+    opt['train']['max_iter'] = args.max_iter
+    opt['is_train'] = True
+
+    # datasets
+    for phase, dataset in opt['datasets'].items():
+        phase = phase.split('_')[0]
+        dataset['phase'] = phase
+        dataset['Apix'] = opt['Apix']
+        dataset['box_size'] = opt['box_size']
+        if 'data_scale' in opt:
+            dataset['data_scale'] = opt['data_scale']
+
+    # path
+    path_task = os.path.join(opt['path']['root'], opt['task'])
+    opt['path']['task'] = path_task
+    opt['path']['log'] = path_task
+    opt['path']['options'] = os.path.join(path_task, 'options')
+    opt['path']['models'] = os.path.join(path_task, 'models')
+    opt['path']['images'] = os.path.join(path_task, 'images')
+
+    # # GPU devices
+    # gpu_list = ','.join(str(x) for x in opt['gpu_ids'])
+    # os.environ['CUDA_VISIBLE_DEVICES'] = gpu_list
+    # print('export CUDA_VISIBLE_DEVICES=' + gpu_list)
+
+    return opt
+
+def mkdirs(opt):
+    for key, path in opt['path'].items():
+        if 'pretrained' not in key:
+            Path(path).mkdir(parents = True, exist_ok = True)
+
+def save(opt):
+    opt_path = Path(opt['opt_path'])
+    opt_name = opt_path.stem + datetime.now().strftime('_%y%m%d_%H%M%S') + opt_path.suffix
+    opt_dir = Path(opt['path']['options'])
+    with open(opt_dir / opt_name, 'w') as fout:
+        json.dump(opt, fout, indent = 2)
+
+def get_logger(opt):
+    log_path = Path(opt['path']['log']) / 'train.log'
+    logger = logging.getLogger('train')
+    if not logger.hasHandlers():
+        formatter = logging.Formatter('%(asctime)s.%(msecs)03d : %(message)s', datefmt='%y-%m-%d %H:%M:%S')
+        handler = logging.FileHandler(log_path, mode = 'a')
+        handler.setFormatter(formatter)
+        logger.setLevel(logging.INFO)
+        logger.addHandler(handler)
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+    return logger

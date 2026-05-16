@@ -37,17 +37,17 @@ def parse_argument(json_path):
         exit()
     return parser.parse_args()
 
-def main(json_path = resources.files(options) / 'train.json'):
+def main():
     # ----------------------------------------
-    # Step--1 (prepare opt)
+    # Prepare opt
     # ----------------------------------------
-    args = parse_argument(json_path)
+    args = parse_argument()
 
     from .utils import utils_logger
     from .utils import utils_image as util
     from .utils import utils_option as option
 
-    opt = option.parse(args, is_train=True)
+    opt = option.parse(args)
 
     util.mkdirs((path for key, path in opt['path'].items() if 'pretrained' not in key))
 
