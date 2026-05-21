@@ -50,8 +50,8 @@ def discrete_radon_transform_3d(volume, rotation):
     zeros = torch.zeros(b, 3, 1).to(volume.device)
     theta = torch.cat([rotation, zeros], dim=2)
 
-    grid = F.affine_grid(theta, size=volume.shape)
-    volume_rot = F.grid_sample(volume, grid, mode='bilinear')
+    grid = F.affine_grid(theta, size=volume.shape, align_corners=False)
+    volume_rot = F.grid_sample(volume, grid, mode='bilinear', align_corners=False)
 
     volume_rot = volume_rot.permute(0, 1, 3, 4, 2)
     proj = volume_rot.sum(dim=-1)
@@ -72,8 +72,8 @@ def translation_2d(proj, trans):
     trans = trans.unsqueeze(-1)
     theta = torch.cat([eye, trans], dim=2)
 
-    grid = F.affine_grid(theta, size=proj.shape)
-    proj_trans = F.grid_sample(proj, grid, mode='bicubic')
+    grid = F.affine_grid(theta, size=proj.shape, align_corners=False)
+    proj_trans = F.grid_sample(proj, grid, mode='bicubic', align_corners=False)
 
     return proj_trans
 

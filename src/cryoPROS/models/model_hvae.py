@@ -1,9 +1,13 @@
 import os
 import torch
+import torch.distributed as dist
 from collections import OrderedDict
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
+from torch.nn.parallel import DistributedDataParallel
+from .. import logger
 from .network_hvae import HVAE
+from .ddp import local_rank, is_distributed, is_main_process
 
 class HVAEModel(object):
     '''Training/inference wrapper for the cryoPROS HVAE network.
@@ -15,11 +19,38 @@ class HVAEModel(object):
     def __init__(self, opt):
         self.opt = opt
         self.save_dir = opt['path']['models']
-        self.device = torch.device('cuda' if opt['gpu_ids'] is not None else 'cpu')
+        self.device = self.init_device()
         self.is_train = opt['is_train']
         self.schedulers = []
         self.model = self.define_net().to(self.device)
         self.continue_skip = 0
+
+        if is_distributed():
+            self.model = DistributedDataParallel(
+                self.model,
+                device_ids = [local_rank()],
+                output_device = local_rank(),
+            )
+
+    def init_device(self):
+        '''Initialize CUDA device and torch distributed process group.
+        '''
+        if not torch.cuda.is_available():
+            raise RuntimeError('Require GPU to perform cryopros-train')
+
+        if is_distributed():
+            torch.cuda.set_device(local_rank())
+            if not dist.is_initialized():
+                backend = 'nccl' if dist.is_nccl_available() else 'gloo'
+                dist.init_process_group(backend = backend, init_method = 'env://')
+            return torch.device(f'cuda:{local_rank()}')
+
+        return torch.device('cuda')
+
+    def bare_model(self):
+        '''Return the underlying network, unwrapped from DDP when needed.
+        '''
+        return self.model.module if is_distributed() else self.model
 
     def init_train(self):
         '''Prepare the model, optimizer, scheduler, and log buffer for training.
@@ -36,13 +67,15 @@ class HVAEModel(object):
         '''
         load_path = self.opt['path']['pretrained_net']
         if load_path is not None:
-            print(f'Loading model [{load_path}] ...')
+            if is_main_process():
+                logger.info(f'Loading model [{load_path}] ...')
             self.load_network(load_path, self.model)
 
     def save(self, iter_label):
         '''Save the current network weights.
         '''
-        self.save_network(self.save_dir, self.model, iter_label)
+        if is_main_process():
+            self.save_network(self.save_dir, self.bare_model(), iter_label)
 
     def define_optimizer(self):
         '''Create the Adam optimizer for all model parameters.
@@ -113,7 +146,8 @@ class HVAEModel(object):
             self.continue_skip = 0
         else:
             self.continue_skip += 1
-            print(f'Current step: {current_step}, num of skip: {self.continue_skip}')
+            if is_main_process():
+                logger.info(f'Current step: {current_step}, num of skip: {self.continue_skip}')
 
         self.log_dict['Loss'] = loss.item()
         self.log_dict['Reconstruction loss'] = loss1.item()
@@ -125,7 +159,7 @@ class HVAEModel(object):
         '''
         self.model.eval()
         with torch.no_grad():
-            self.img_G = self.model.generate(self.rotation, self.trans, self.ctf, self.meta)
+            self.img_G = self.bare_model().generate(self.rotation, self.trans, self.ctf, self.meta)
         self.model.train()
 
     def current_log(self):
@@ -155,16 +189,16 @@ class HVAEModel(object):
         return self.schedulers[0].get_last_lr()[0]
 
     def print_network(self):
-        print(self.describe_network(self.model))
+        logger.info(self.describe_network(self.bare_model()))
 
     def print_params(self):
-        print(self.describe_params(self.model))
+        logger.info(self.describe_params(self.bare_model()))
 
     def info_network(self):
-        return self.describe_network(self.model)
+        return self.describe_network(self.bare_model())
 
     def info_params(self):
-        return self.describe_params(self.model)
+        return self.describe_params(self.bare_model())
 
     @staticmethod
     def describe_network(model):
@@ -230,7 +264,14 @@ class HVAEModel(object):
             strict (bool): Whether checkpoint keys must exactly match the model.
         '''
         states = torch.load(load_path, map_location = self.device)
+        model = self.bare_model()
         model.load_state_dict(states, strict = strict)
+
+    def cleanup(self):
+        '''Release the distributed process group when this model owns one.
+        '''
+        if is_distributed() and dist.is_initialized():
+            dist.destroy_process_group()
 
     def define_net(self):
         '''Construct the HVAE network from runtime options.

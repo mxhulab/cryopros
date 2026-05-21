@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 from datetime import datetime
 from pathlib import Path
@@ -69,17 +68,3 @@ def save(opt):
     opt_dir = Path(opt['path']['options'])
     with open(opt_dir / opt_name, 'w') as fout:
         json.dump(opt, fout, indent = 2)
-
-def get_logger(opt):
-    log_path = Path(opt['path']['log']) / 'train.log'
-    logger = logging.getLogger('train')
-    if not logger.hasHandlers():
-        formatter = logging.Formatter('%(asctime)s.%(msecs)03d : %(message)s', datefmt='%y-%m-%d %H:%M:%S')
-        handler = logging.FileHandler(log_path, mode = 'a')
-        handler.setFormatter(formatter)
-        logger.setLevel(logging.INFO)
-        logger.addHandler(handler)
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
-    return logger

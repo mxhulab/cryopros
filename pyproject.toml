@@ -47,7 +47,7 @@ Homepage = "https://github.com/mxhulab/cryoPROS"
 "cryoPROS.options" = ["*.json"]
 
 [project.scripts]
-cryopros-gen-mask = "cryoPROS.cryopros_gen_mask:main"
-cryopros-recondismic = "cryoPROS.cryopros_recondismic:main"
-cryopros-train = "cryoPROS.cryopros_train:main"
-cryopros-generate = "cryoPROS.cryopros_generate:main"
+cryopros-genmask = "cryoPROS.genmask:main"
+cryopros-recondismic = "cryoPROS.recondismic:main"
+cryopros-train = "cryoPROS.train:main"
+cryopros-generate = "cryoPROS.generate:main"

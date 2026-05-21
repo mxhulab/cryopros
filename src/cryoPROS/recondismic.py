@@ -1,7 +1,7 @@
 import argparse
 import sys
 from importlib import resources
-from . import __version__, options
+from . import __version__, logger, options
 
 def parse_argument():
     parser = argparse.ArgumentParser(description = 'Reconstructing the micelle/nanodisc density map from an input initial volume, a mask volume and raw particles with given imaging parameters.')
@@ -117,7 +117,6 @@ def main():
     opt = option.parse(args)
     option.mkdirs(opt)
     option.save(opt)
-    logger = option.get_logger(opt)
     logger.info('training options:' + json.dumps(opt, indent = 2))
 
 
@@ -136,7 +135,7 @@ def main():
 
 
     # Dataset and DataLoader
-    from .data import DatasetMP
+    from .dataset import ParticleDataset
     from math import ceil
     from torch.utils.data import DataLoader
 
@@ -144,7 +143,7 @@ def main():
         if phase != 'train':
             raise NotImplementedError(f'Phase [{phase}] is not recognized')
 
-        train_set = DatasetMP(dataset_opt)
+        train_set = ParticleDataset(dataset_opt)
         train_size = int(ceil(len(train_set) / dataset_opt['dataloader_batch_size']))
         logger.info(f'Number of train images: {len(train_set)}, iters: {train_size}')
         train_loader = DataLoader(
@@ -212,7 +211,7 @@ def main():
         if current_step > max_iter:
             break
 
-    logger.info('End of training')
+    logger.info('Saving the final model')
     model.save('latest')
     logger.info('End of training')
 

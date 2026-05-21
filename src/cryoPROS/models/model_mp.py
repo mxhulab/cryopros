@@ -3,6 +3,7 @@ import torch
 from collections import OrderedDict
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
+from .. import logger
 from .network_mp import Reconstructor
 
 class ReconModel(object):
@@ -35,7 +36,7 @@ class ReconModel(object):
         '''
         load_path = self.opt['path']['pretrained_net']
         if load_path is not None:
-            print(f'Loading model [{load_path}] ...')
+            logger.info(f'Loading model [{load_path}] ...')
             self.load_network(load_path, self.model)
 
     def save(self, iter_label):
@@ -118,10 +119,10 @@ class ReconModel(object):
         return self.schedulers[0].get_lr()[0]
 
     def print_network(self):
-        print(self.describe_network(self.model))
+        logger.info(self.describe_network(self.model))
 
     def print_params(self):
-        print(self.describe_params(self.model))
+        logger.info(self.describe_params(self.model))
 
     def info_network(self):
         return self.describe_network(self.model)
