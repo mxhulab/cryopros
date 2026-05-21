@@ -19,7 +19,7 @@ def parse_argument():
         help = 'box size'
     )
     parser.add_argument(
-        '--Apix',
+        '--apix',
         type = float,
         required = True,
         help = 'pixel size in Angstrom'
@@ -35,9 +35,9 @@ def parse_argument():
         help = 'mask volume path'
     )
     parser.add_argument(
-        '--data_path',
-        required = True,
-        help = 'input raw particles path'
+        '--data_dir',
+        default = '.',
+        help = 'directory of input raw particle stacks'
     )
     parser.add_argument(
         '--param_path',
@@ -203,7 +203,7 @@ def main():
                 save_path = Path(opt['path']['models']) / f'{current_step}.mrc'
                 with mrcfile.new(save_path, overwrite = True) as mrc:
                     mrc.set_data(volume)
-                    mrc.voxel_size = opt['Apix']
+                    mrc.voxel_size = opt['apix']
 
             if current_step > max_iter:
                 break

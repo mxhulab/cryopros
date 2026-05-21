@@ -36,7 +36,7 @@ def parse_argument():
         help = 'box size'
     )
     parser.add_argument(
-        '--Apix',
+        '--apix',
         type = float,
         required = True,
         help = 'pixel size in Angstrom'
@@ -111,12 +111,12 @@ def main():
     logger.info(f'Generating star file & stack file: {str(uniform_pose_path)} {str(stack_path)}')
     generate_uniform_pose(args.param_path, uniform_pose_path, stack_path)
 
-    Apix : float = args.Apix
+    apix : float = args.apix
     box_size : int = args.box_size
     particle_dataset = ParticleDataset({
-        'data_path': output_dir,
+        'data_dir': output_dir,
         'param_path': uniform_pose_path,
-        'Apix': Apix,
+        'apix': apix,
         'box_size': box_size,
         'n_max': args.num_max,
     })
@@ -147,7 +147,7 @@ def main():
     states = torch.load(args.model_path)
     models = []
     for device in devices:
-        model = HVAE(nf = 64, nls = args.nls, z_dim = 16, box_size = box_size, Apix = Apix, invert = args.invert)
+        model = HVAE(nf = 64, nls = args.nls, z_dim = 16, box_size = box_size, apix = apix, invert = args.invert)
         model.load_state_dict(states, strict = True)
         model.eval()
         for k, v in model.named_parameters():
@@ -166,7 +166,7 @@ def main():
 
     import mrcfile
     with mrcfile.new_mmap(output_dir / stack_path, (num_gen, box_size, box_size), mrc_mode = 2, overwrite = True) as mrc:
-        mrc.voxel_size = Apix
+        mrc.voxel_size = apix
         offset = 1024 + mrc.header.nsymbt
 
     # 使用队列来为每个线程初始化它所持有的model和device

@@ -100,7 +100,7 @@ def init_volume(box_size):
 
 
 class Reconstructor(nn.Module):
-    def __init__(self, box_size=256, Apix=1.31, invert=True, init_volume_path=None,
+    def __init__(self, box_size=256, apix=1.31, invert=True, init_volume_path=None,
                  volume_scale=1, update_volume_scale=False, update_volume=False, mask_path=None):
         super(Reconstructor, self).__init__()
 
@@ -138,7 +138,7 @@ class Reconstructor(nn.Module):
             ),
             -1,
         )
-        / Apix
+        / apix
         )
         freqs = freqs.reshape(-1, 2)
         self.freqs = torch.from_numpy(freqs).unsqueeze(0).float()

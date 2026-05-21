@@ -16,7 +16,7 @@ def parse(args):
 
     # Write args to opt
     opt['box_size'] = args.box_size
-    opt['Apix'] = args.Apix
+    opt['apix'] = args.apix
     opt['init_volume_path'] = args.init_volume_path
     if hasattr(args, 'mask_path'): opt['mask_path'] = args.mask_path
     opt['gpu_ids'] = args.gpu_ids
@@ -24,7 +24,7 @@ def parse(args):
     opt['opt_path'] = args.opt
     opt['task'] = args.task_name
     opt['volume_scale'] = args.volume_scale
-    opt['datasets']['train']['data_path'] = args.data_path
+    opt['datasets']['train']['data_dir'] = args.data_dir
     opt['datasets']['train']['param_path'] = args.param_path
     opt['datasets']['train']['dataloader_batch_size'] = args.dataloader_batch_size
     opt['datasets']['train']['dataloader_num_workers'] = args.dataloader_num_workers
@@ -37,7 +37,7 @@ def parse(args):
     for phase, dataset in opt['datasets'].items():
         phase = phase.split('_')[0]
         dataset['phase'] = phase
-        dataset['Apix'] = opt['Apix']
+        dataset['apix'] = opt['apix']
         dataset['box_size'] = opt['box_size']
         if 'data_scale' in opt:
             dataset['data_scale'] = opt['data_scale']

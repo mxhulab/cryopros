@@ -3,7 +3,7 @@
   "gpu_ids": [0, 1, 2, 3],
   "num_gen": 10,
   "box_size": 256,
-  "Apix": 1,
+  "apix": 1,
   "invert": true,
   "init_volume_path": "",
   "volume_scale": 50.0,
@@ -22,7 +22,7 @@
   "datasets": {
     "train": {
       "name": "train_dataset",    // just name
-      "data_path": "",
+      "data_dir": ".",
       "param_path": "",
       "n_max": null,
       "dataloader_shuffle": true,

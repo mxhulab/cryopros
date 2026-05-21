@@ -265,7 +265,7 @@ def degrade_process(proj, noise_level):
 
 class HVAE(nn.Module):
     def __init__(self, in_ch=1, nf=64, nls=[2, 2], z_dim=16, box_size=256,
-                 Apix=1.0, invert=True, init_volume_path=None, update_volume=False,
+                 apix=1.0, invert=True, init_volume_path=None, update_volume=False,
                  volume_scale=1.0, noise_level=0):
         super(HVAE, self).__init__()
 
@@ -353,7 +353,7 @@ class HVAE(nn.Module):
             ),
             -1,
         )
-        / Apix
+        / apix
         )
 
         freqs = freqs.reshape(-1, 2)

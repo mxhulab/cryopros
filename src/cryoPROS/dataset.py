@@ -102,12 +102,15 @@ class ParticleDataset(Dataset):
     def __init__(self, opt : dict):
         super().__init__()
         self.opt = opt
-        self.data_path = Path(opt['data_path'])
+        self.data_dir = Path(opt.get('data_dir', '.'))
         self.data_scale = opt.get('data_scale')
         self.param_path = Path(opt['param_path'])
-        self.Apix = opt['Apix']
+        self.apix = opt['apix']
         self.box_size = opt['box_size']
         self.cached_mrc_handles = {}
+
+        if not self.data_dir.is_dir():
+            raise ValueError(f'`data_dir` should be a directory: {str(self.data_dir)}')
 
         if self.param_path.suffix != '.star':
             raise ValueError(f'Only RELION star files are supported: {str(self.param_path)}')
@@ -138,7 +141,6 @@ class ParticleDataset(Dataset):
 
         self.i_slcs = split_data[0].to_numpy(dtype = np.int64)
         self.names = split_data[1].to_numpy(dtype = np.str_)
-        self.data_dir = self.data_path if self.data_path.is_dir() else self.data_path.parent
 
     def _parse_particle_parameters(self):
         '''Parse rotations, translations, and CTFs using the old return layout.
@@ -152,7 +154,7 @@ class ParticleDataset(Dataset):
             particles['rlnAnglePsi'],
         )
 
-        pixel_size = particles['rlnImagePixelSize'][0] if 'rlnImagePixelSize' in particles else self.Apix
+        pixel_size = particles['rlnImagePixelSize'][0] if 'rlnImagePixelSize' in particles else self.apix
         image_size = particles['rlnImageSize'][0] if 'rlnImageSize' in particles else self.box_size
 
         trans = np.empty((n_particles, 2), dtype = np.float32)

@@ -19,7 +19,7 @@ def parse_argument():
         help = 'box size'
     )
     parser.add_argument(
-        '--Apix',
+        '--apix',
         type = float,
         required = True,
         help = 'pixel size in Angstrom'
@@ -30,9 +30,9 @@ def parse_argument():
         help = 'input inital volume path'
     )
     parser.add_argument(
-        '--data_path',
-        required = True,
-        help = 'input raw particles path'
+        '--data_dir',
+        default = '.',
+        help = 'directory of input raw particle stacks'
     )
     parser.add_argument(
         '--param_path',

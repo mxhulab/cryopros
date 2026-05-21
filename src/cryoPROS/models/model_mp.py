@@ -201,7 +201,7 @@ class ReconModel(object):
         '''
         return Reconstructor(
             box_size = self.opt['box_size'],
-            Apix = self.opt['Apix'],
+            apix = self.opt['apix'],
             invert = self.opt['invert'],
             init_volume_path = self.opt['init_volume_path'],
             volume_scale = self.opt['volume_scale'],
