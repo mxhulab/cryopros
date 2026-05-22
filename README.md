@@ -95,13 +95,13 @@ CryoPROS facilitates the recovery of near-atomic-resolution details from the unt
 ![result](./images/ha_trimer/ha_trimer_result.png "Result")
 
 - **a**, The top row illustrates the pose distribution obtained through the tilt strategy (130,000 particles), while the middle (side view) and bottom rows  (top view) depict the reconstructed density maps of the tilt-collected dataset: autorefinement (pink) and state-of-the-art results (violet). Notably, achieving the state-of-the-art result necessitates intricate subsequent refinements at the per-particle level, involving multi-round 3D classification, defocus refinement, and Bayesian polishing.
-- **b**, Similar to **a**, with the first row showcasing the pose distribution of untilted raw particle stacks (130,000 particles), the generated particles (130,000 particles), and selected subset for local refinement (31,146 particles). Reconstructed density maps of the untilted dataset, including autorefinement (yellow), cryoPROS (cyan), and cryoPROS with follow-up local refinement (magenta), are presented. Maps in a and b are superimposed on the envelope of the HA-trimer atomic model (PDB ID: 3WHE, grey). 
+- **b**, Similar to **a**, with the first row showcasing the pose distribution of untilted raw particle stacks (130,000 particles), the generated particles (130,000 particles), and selected subset for local refinement (31,146 particles). Reconstructed density maps of the untilted dataset, including autorefinement (yellow), cryoPROS (cyan), and cryoPROS with follow-up local refinement (magenta), are presented. Maps in a and b are superimposed on the envelope of the HA-trimer atomic model (PDB ID: 3WHE, grey).
 - **c**, Detailed close-ups of selected parts of the density maps shown in a and b, ordered consistently. The first and second rows display regions of alpha-helix and beta-sheet with low transparency, respectively. The third row and fourth row show the selected regions in gray mesh style, with the embedded atomic model colored by average Q-score.sc value and average Q-score.bb value, respectively.
 
 ### Step 1: Download Untitled HA-Trimer Dataset (EMPIAR-10096)
 
 Download [EMPIAR-10096 (~32GB)](https://ftp.ebi.ac.uk/empiar/world_availability/10096/data/Particle-Stack/).
-You can download it directly from the command line: 
+You can download it directly from the command line:
 ```
 wget -nH -m ftp://ftp.ebi.ac.uk/empiar/world_availability/10096/data/Particle-Stack/
 ```
@@ -142,7 +142,7 @@ save #2 6idd_align.mrc
 - Or in the ChimeraX command line:
 ```
 molmap #2 2.62 onGrid #1
-fitmap #3 inMap #1 
+fitmap #3 inMap #1
 vop resample #3 onGrid #1
 save 6idd_align.mrc #3
 ```
@@ -164,7 +164,7 @@ cryopros-train \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_1 \
 --box_size 256 \
---Apix 1.31 \
+--apix 1.31 \
 --volume_scale 50 \
 --init_volume_path 6idd_align_lp10.mrc \
 --data_path T00_HA_130K-Equalized-Particle-Stack.mrcs \
@@ -196,7 +196,7 @@ cryopros-generate \
 --gen_name HAtrimer_iteration_1_generated_particles \
 --batch_size 50 \
 --box_size 256 \
---Apix 1.31 \
+--apix 1.31 \
 --invert \
 --gen_mode 2 \
 ```
@@ -245,7 +245,7 @@ cryopros-train \
 --gpu_ids 0 1 2 3 \
 --task_name HAtrimer_iteration_2 \
 --box_size 256 \
---Apix 1.31 \
+--apix 1.31 \
 --volume_scale 50 \
 --init_volume_path cryosparc_P68_J2581_volume_map_sharp.mrc \
 --data_path raw_iter_2.mrcs \
@@ -276,7 +276,7 @@ cryopros-generate \
 --gen_name HAtrimer_iteration_2_generated_particles \
 --batch_size 50 \
 --box_size 256 \
---Apix 1.31 \
+--apix 1.31 \
 --invert \
 --gen_mode 2 \
 ```
@@ -338,7 +338,7 @@ The expected processed density map (`4826_refined.mrc`) can be downloaded from [
 
 ```
 $ cryopros-train -h
-usage: cryopros-train [-h] --box_size BOX_SIZE --Apix APIX --init_volume_path INIT_VOLUME_PATH --data_path
+usage: cryopros-train [-h] --box_size BOX_SIZE --apix APIX --init_volume_path INIT_VOLUME_PATH --data_path
                      DATA_PATH --param_path PARAM_PATH --gpu_ids GPU_IDS [GPU_IDS ...] [--invert]
                      [--task_name TASK_NAME] [--volume_scale VOLUME_SCALE]
                      [--dataloader_batch_size DATALOADER_BATCH_SIZE]
@@ -351,7 +351,7 @@ imaging parameters.
 options:
   -h, --help            show this help message and exit
   --box_size BOX_SIZE   box size
-  --Apix APIX           pixel size in Angstrom
+  --apix APIX           pixel size in Angstrom
   --init_volume_path INIT_VOLUME_PATH
                         input inital volume path
   --data_path DATA_PATH
@@ -380,7 +380,7 @@ options:
 
 ```
 $ cryopros-generate -h
-usage: cryopros-generate [-h] --model_path MODEL_PATH --output_path OUTPUT_PATH --box_size BOX_SIZE --Apix APIX --gen_name GEN_NAME --param_path
+usage: cryopros-generate [-h] --model_path MODEL_PATH --output_path OUTPUT_PATH --box_size BOX_SIZE --apix APIX --gen_name GEN_NAME --param_path
                               PARAM_PATH [--invert] [--batch_size BATCH_SIZE] [--num_max NUM_MAX] [--data_scale DATA_SCALE] [--gen_mode GEN_MODE]
                               [--nls NLS [NLS ...]]
 
@@ -393,7 +393,7 @@ options:
   --output_path OUTPUT_PATH
                         output output synthesized auxiliary particle stack
   --box_size BOX_SIZE   box size
-  --Apix APIX           pixel size in Angstrom
+  --apix APIX           pixel size in Angstrom
   --gen_name GEN_NAME   filename of the generated auxiliary particle stack
   --param_path PARAM_PATH
                         path of star file which contains the imaging parameters
@@ -430,7 +430,7 @@ options:
 
 ```
 $ cryopros-recondismic -h
-usage: cryopros-recondismic [-h] --box_size BOX_SIZE --Apix APIX --init_volume_path INIT_VOLUME_PATH --mask_path
+usage: cryopros-recondismic [-h] --box_size BOX_SIZE --apix APIX --init_volume_path INIT_VOLUME_PATH --mask_path
                         MASK_PATH --data_path DATA_PATH --param_path PARAM_PATH --gpu_ids GPU_IDS [GPU_IDS ...]
                         [--invert] [--task_name TASK_NAME] [--volume_scale VOLUME_SCALE]
                         [--dataloader_batch_size DATALOADER_BATCH_SIZE]
@@ -443,7 +443,7 @@ with given imaging parameters.
 options:
   -h, --help            show this help message and exit
   --box_size BOX_SIZE   box size
-  --Apix APIX           pixel size in Angstrom
+  --apix APIX           pixel size in Angstrom
   --init_volume_path INIT_VOLUME_PATH
                         input inital volume path
   --mask_path MASK_PATH

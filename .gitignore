@@ -1,0 +1,10 @@
+.DS_Store
+
+dist/
+build/
+*.egg-info/
+__pycache__/
+
+test/
+abandon/
+TODO.md

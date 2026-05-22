@@ -7,7 +7,7 @@ pip install .
 
 # Tutorial
 
-## Step 1 (Optional, Reconstruct micelle for membrane protein) 
+## Step 1 (Optional, Reconstruct micelle for membrane protein)
 
 First, generate a volume mask with a user-chosen threshold value:
 ```shell
@@ -23,7 +23,7 @@ cryopros-recondismic \
 --gpu_ids 0 1 2 3 \                          # GPU id
 --task_name task_name \                      # Task name
 --box_size 256 \                             # Box size
---Apix 1.0 \                                 # Pixel size
+--apix 1.0 \                                 # Pixel size
 --init_volume_path latent_volume.mrc \       # Path to latent volume
 --volume_scale 10 \                          # Volume scale
 --mask_path ./mask.mrc \                     # Path to volume mask
@@ -42,7 +42,7 @@ cryopros-train \
 --gpu_ids 0 1 2 3 \                             # GPU id
 --task_name task_name \                         # Task name
 --box_size 256 \                                # Box size
---Apix 1.0 \                                    # Pixel size
+--apix 1.0 \                                    # Pixel size
 --volume_scale 50 \                             # Latent volume scale: 50 or 100
 --init_volume_path latent_volume.mrc \          # Path to latent volume
 --data_path raw_particles.mrcs \                # Path to raw particle
@@ -63,7 +63,7 @@ cryopros-generate \
 --gen_name generated_particles \       # Name of generated particles
 --batch_size 50 \                      # Generation batch size
 --box_size 256 \                       # Box size
---Apix 1.0 \                           # Pixel size
+--apix 1.0 \                           # Pixel size
 --invert \                             # Invert projection
 ```
 
