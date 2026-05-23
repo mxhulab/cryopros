@@ -1,0 +1,34 @@
+id: cryopros
+displayName: CryoPROS
+version: 1
+repository: git@github.com:mxhulab/cryopros.git
+provides:
+  jobTypes:
+    - CRYOPROS_PREP
+    - CRYOPROS_TRAIN
+    - CRYOPROS_GENERATE
+  commands:
+    - cryopros-genmask
+    - cryopros-recondismic
+    - cryopros-train
+    - cryopros-generate
+    - export_cryopros
+  capabilities:
+    - particle-set.consumer
+    - particle-prior.trainer
+    - particle-selection.producer
+requires:
+  external:
+    - relion
+  optional:
+    - cryosparc
+resources:
+  jobTypeMapping: jobTypeMapping.json
+  scripts:
+    - scripts/export_cryopros.py
+lineage:
+  consumes:
+    - capability: particle-set.producer
+  produces:
+    - capability: particle-selection.producer
+      artifactType: particle-selection

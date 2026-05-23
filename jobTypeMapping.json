@@ -1,0 +1,945 @@
+{
+  "types": {
+    "CRYOPROS_PREP": {
+      "displayName": "CryoPROS Prep",
+      "initPrefix": "cryopros_prep",
+      "payloadSchema": {
+        "schemaId": "scripts.v1",
+        "payloadType": "PeerJobPayload",
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            },
+            "fileJobPath": {
+              "type": "string"
+            },
+            "fileOutPath": {
+              "type": "string"
+            },
+            "scriptName": {
+              "type": "string"
+            },
+            "scriptType": {
+              "type": "string"
+            },
+            "data_dir": {
+              "type": "string"
+            },
+            "particlesStarPath": {
+              "type": "string"
+            },
+            "lowpass_output": {
+              "type": "string"
+            },
+            "micelle_output": {
+              "type": "string"
+            },
+            "reconstructModelsDir": {
+              "type": "string",
+              "title": "Reconstruct models directory",
+              "description": "CryoPROS Prep reconstruct/<task_name>/models directory."
+            },
+            "recondismic_output": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "specSchema": {
+        "schemaId": "cryopros_prep.spec.v1",
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "init_volume": {
+              "type": "string",
+              "title": "Initial volume"
+            },
+            "lowpass": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Low-pass",
+              "description": "Low-pass value for relion_image_handler."
+            },
+            "isMembraneProtein": {
+              "type": "boolean",
+              "title": "Membrane protein",
+              "default": false
+            },
+            "threshold": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Threshold"
+            },
+            "particle_id": {
+              "type": "string",
+              "title": "Particle",
+              "description": "Select an imported particle job."
+            },
+            "invert": {
+              "type": "boolean",
+              "title": "Invert",
+              "default": true
+            },
+            "task_name": {
+              "type": "string",
+              "title": "Task name"
+            },
+            "box_size": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Box size"
+            },
+            "Apix": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Pixel size (Å)"
+            },
+            "volume_scale": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Volume scale"
+            },
+            "dataloader_batch_size": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Dataloader batch size"
+            },
+            "dataloader_num_workers": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Dataloader workers"
+            },
+            "gpu_ids": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "GPU IDs"
+            },
+            "lane": {
+              "type": "string",
+              "title": "Lane",
+              "description": "Execution lane used to resolve the Slurm environment header."
+            },
+            "particle_title": {
+              "type": "string",
+              "title": "Particle title",
+              "description": "Selected particle title."
+            },
+            "description": {
+              "label": "Description",
+              "description": "Optional notes about this job."
+            }
+          },
+          "required": [
+            "lane",
+            "init_volume",
+            "lowpass"
+          ]
+        }
+      },
+      "ui": {
+        "create": {
+          "visibilityRules": {
+            "threshold": {
+              "when": "isMembraneProtein"
+            },
+            "invert": {
+              "when": "isMembraneProtein"
+            },
+            "task_name": {
+              "when": "isMembraneProtein"
+            },
+            "box_size": {
+              "when": "isMembraneProtein"
+            },
+            "Apix": {
+              "when": "isMembraneProtein"
+            },
+            "volume_scale": {
+              "when": "isMembraneProtein"
+            },
+            "dataloader_batch_size": {
+              "when": "isMembraneProtein"
+            },
+            "dataloader_num_workers": {
+              "when": "isMembraneProtein"
+            },
+            "gpu_ids": {
+              "when": "isMembraneProtein"
+            }
+          },
+          "sections": {
+            "general": [
+              "projectName",
+              "lane"
+            ],
+            "details": [
+              "id",
+              "title",
+              "description"
+            ],
+            "parameters": [
+              "init_volume",
+              "lowpass",
+              "particle_id",
+              "isMembraneProtein",
+              "threshold",
+              "invert",
+              "task_name",
+              "box_size",
+              "Apix",
+              "volume_scale",
+              "dataloader_batch_size",
+              "dataloader_num_workers",
+              "gpu_ids"
+            ]
+          }
+        }
+      },
+      "command": {
+        "scriptType": "cryopros_prep",
+        "stages": [
+          {
+            "stageId": "S1_cryopros-prep",
+            "stageKey": "PREP",
+            "launcherType": "slurm",
+            "steps": [
+              {
+                "key": "01_lowpass",
+                "execKey": "relion_image_handler",
+                "args": [
+                  {
+                    "key": "i",
+                    "flag": "--i",
+                    "from": "spec.init_volume",
+                    "required": true
+                  },
+                  {
+                    "key": "o",
+                    "flag": "--o",
+                    "from": "payload.lowpass_output",
+                    "required": true
+                  },
+                  {
+                    "key": "lowpass",
+                    "flag": "--lowpass",
+                    "from": "spec.lowpass",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "key": "02_gen_mask",
+                "execKey": "cryopros-genmask",
+                "args": [
+                  {
+                    "key": "volume_path",
+                    "flag": "--volume_path",
+                    "from": "payload.lowpass_output",
+                    "required": true
+                  },
+                  {
+                    "key": "result_path",
+                    "flag": "--result_path",
+                    "from": "payload.micelle_output",
+                    "required": true
+                  },
+                  {
+                    "key": "threshold",
+                    "flag": "--threshold",
+                    "from": "spec.threshold",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "key": "03_recondismic",
+                "execKey": "cryopros-recondismic",
+                "args": [
+                  {
+                    "key": "box_size",
+                    "flag": "--box_size",
+                    "from": "spec.box_size",
+                    "required": true
+                  },
+                  {
+                    "key": "Apix",
+                    "flag": "--apix",
+                    "from": "spec.Apix",
+                    "required": true
+                  },
+                  {
+                    "key": "init_volume_path",
+                    "flag": "--init_volume_path",
+                    "from": "payload.lowpass_output",
+                    "required": true
+                  },
+                  {
+                    "key": "mask_path",
+                    "flag": "--mask_path",
+                    "from": "payload.micelle_output",
+                    "required": true
+                  },
+                  {
+                    "key": "data_dir",
+                    "flag": "--data_dir",
+                    "from": "payload.data_dir",
+                    "required": true
+                  },
+                  {
+                    "key": "param_path",
+                    "flag": "--param_path",
+                    "from": "payload.particlesStarPath",
+                    "required": true
+                  },
+                  {
+                    "key": "invert",
+                    "flag": "--invert",
+                    "from": "spec.invert",
+                    "required": false,
+                    "boolean": true
+                  },
+                  {
+                    "key": "task_name",
+                    "flag": "--task_name",
+                    "from": "spec.task_name",
+                    "required": true
+                  },
+                  {
+                    "key": "volume_scale",
+                    "flag": "--volume_scale",
+                    "from": "spec.volume_scale",
+                    "required": true
+                  },
+                  {
+                    "key": "dataloader_batch_size",
+                    "flag": "--dataloader_batch_size",
+                    "from": "spec.dataloader_batch_size",
+                    "required": false
+                  },
+                  {
+                    "key": "dataloader_num_workers",
+                    "flag": "--dataloader_num_workers",
+                    "from": "spec.dataloader_num_workers",
+                    "required": true
+                  },
+                  {
+                    "key": "gpu_ids",
+                    "flag": "--gpu_ids",
+                    "from": "spec.gpu_ids",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "createMetaSchema": {
+        "schemaId": "cryopros_prep.create-meta.v1",
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "projectName": {
+              "title": "Project",
+              "description": "Project that owns this job."
+            },
+            "id": {
+              "title": "ID",
+              "description": "Auto-generated CoJ identifier. Globally unique and used as the job folder name.",
+              "required": true,
+              "readOnly": true
+            },
+            "title": {
+              "title": "Title",
+              "description": "Defaults to the ID if left empty.",
+              "required": true
+            }
+          }
+        }
+      }
+    },
+    "CRYOPROS_TRAIN": {
+      "displayName": "CryoPROS Train",
+      "initPrefix": "cryopros_train",
+      "payloadSchema": {
+        "schemaId": "scripts.v1",
+        "payloadType": "PeerJobPayload",
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            },
+            "fileJobPath": {
+              "type": "string"
+            },
+            "fileOutPath": {
+              "type": "string"
+            },
+            "scriptName": {
+              "type": "string"
+            },
+            "scriptType": {
+              "type": "string"
+            },
+            "preparedVolumeModelsDir": {
+              "type": "string"
+            },
+            "init_volume_path": {
+              "type": "string"
+            },
+            "data_dir": {
+              "type": "string"
+            },
+            "param_path": {
+              "type": "string"
+            },
+            "generatedModelsDir": {
+              "type": "string"
+            },
+            "generatedModelPath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "specSchema": {
+        "schemaId": "cryopros_train.spec.v1",
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "prepared_volume_id": {
+              "type": "string",
+              "title": "Prepared volume",
+              "description": "Select a CryoPROS Prep job."
+            },
+            "model": {
+              "type": "string",
+              "title": "Model",
+              "description": "Selected .mrc model file from the chosen CryoPROS Prep models directory."
+            },
+            "box_size": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Box size"
+            },
+            "Apix": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Pixel size (Å)"
+            },
+            "invert": {
+              "type": "boolean",
+              "title": "Invert",
+              "default": true
+            },
+            "task_name": {
+              "type": "string",
+              "title": "Task name"
+            },
+            "dataloader_batch_size": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Dataloader batch size",
+              "default": 6
+            },
+            "lane": {
+              "type": "string",
+              "title": "Lane",
+              "description": "Execution lane used to resolve the Slurm environment header."
+            },
+            "prepared_volume_title": {
+              "type": "string",
+              "title": "Prepared volume title"
+            },
+            "description": {
+              "label": "Description",
+              "description": "Optional notes about this job."
+            }
+          },
+          "required": [
+            "lane",
+            "prepared_volume_id",
+            "box_size",
+            "Apix",
+            "task_name"
+          ]
+        }
+      },
+      "ui": {
+        "create": {
+          "visibilityRules": {
+            "model": {
+              "when": "prepared_volume_id"
+            }
+          },
+          "sections": {
+            "general": [
+              "projectName",
+              "lane"
+            ],
+            "details": [
+              "id",
+              "title",
+              "description"
+            ],
+            "parameters": [
+              "prepared_volume_id",
+              "model",
+              "box_size",
+              "Apix",
+              "invert",
+              "task_name",
+              "dataloader_batch_size"
+            ]
+          }
+        }
+      },
+      "command": {
+        "scriptType": "cryopros-train",
+        "stages": [
+          {
+            "stageId": "S1_cryopros",
+            "stageKey": "TRAIN",
+            "launcherType": "slurm",
+            "steps": [
+              {
+                "key": "01_train",
+                "execKey": "cryopros-train",
+                "args": [
+                  {
+                    "key": "init_volume_path",
+                    "flag": "--init_volume_path",
+                    "from": "payload.init_volume_path",
+                    "required": true
+                  },
+                  {
+                    "key": "box_size",
+                    "flag": "--box_size",
+                    "from": "spec.box_size",
+                    "required": true
+                  },
+                  {
+                    "key": "Apix",
+                    "flag": "--apix",
+                    "from": "spec.Apix",
+                    "required": true
+                  },
+                  {
+                    "key": "data_dir",
+                    "flag": "--data_dir",
+                    "from": "payload.data_dir",
+                    "required": true
+                  },
+                  {
+                    "key": "param_path",
+                    "flag": "--param_path",
+                    "from": "payload.param_path",
+                    "required": true
+                  },
+                  {
+                    "key": "invert",
+                    "flag": "--invert",
+                    "from": "spec.invert",
+                    "required": false,
+                    "boolean": true
+                  },
+                  {
+                    "key": "task_name",
+                    "flag": "--task_name",
+                    "from": "spec.task_name",
+                    "required": true
+                  },
+                  {
+                    "key": "dataloader_batch_size",
+                    "flag": "--dataloader_batch_size",
+                    "from": "spec.dataloader_batch_size",
+                    "required": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "createMetaSchema": {
+        "schemaId": "cryopros_train.create-meta.v1",
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "projectName": {
+              "title": "Project",
+              "description": "Project that owns this job."
+            },
+            "id": {
+              "title": "ID",
+              "description": "Auto-generated CoJ identifier. Globally unique and used as the job folder name.",
+              "required": true,
+              "readOnly": true
+            },
+            "title": {
+              "title": "Title",
+              "description": "Defaults to the ID if left empty.",
+              "required": true
+            }
+          }
+        }
+      }
+    },
+    "CRYOPROS_GENERATE": {
+      "displayName": "CryoPROS Generate",
+      "initPrefix": "cryopros_generate",
+      "payloadSchema": {
+        "schemaId": "scripts.v1",
+        "payloadType": "PeerJobPayload",
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            },
+            "fileJobPath": {
+              "type": "string"
+            },
+            "fileOutPath": {
+              "type": "string"
+            },
+            "scriptName": {
+              "type": "string"
+            },
+            "scriptType": {
+              "type": "string"
+            },
+            "model_path": {
+              "type": "string"
+            },
+            "data_dir": {
+              "type": "string"
+            },
+            "param_path": {
+              "type": "string"
+            },
+            "generatedOutputDir": {
+              "type": "string"
+            },
+            "generatedMrcsPath": {
+              "type": "string"
+            },
+            "generatedStarPath": {
+              "type": "string"
+            },
+            "gen_mode": {
+              "type": "string",
+              "description": "Hard-coded generation mode passed to CryoPROS Generate."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "specSchema": {
+        "schemaId": "cryopros_generate.spec.v1",
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "trained_model_id": {
+              "type": "string",
+              "title": "Trained model",
+              "description": "Select a CryoPROS Train job."
+            },
+            "output_path": {
+              "type": "string",
+              "title": "Output path"
+            },
+            "gen_name": {
+              "type": "string",
+              "title": "Generation name"
+            },
+            "box_size": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Box size"
+            },
+            "Apix": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Pixel size (Å)"
+            },
+            "invert": {
+              "type": "boolean",
+              "title": "Invert",
+              "default": true
+            },
+            "activationCmd": {
+              "type": "string",
+              "title": "Activation command",
+              "description": "Optional command recorded with the job for downstream CryoPROS scripts."
+            },
+            "trained_model_title": {
+              "type": "string",
+              "title": "Trained model title"
+            },
+            "exportToCryoSPARC": {
+              "type": "boolean",
+              "title": "CryoSPARC and 2D classification",
+              "default": false
+            },
+            "user": {
+              "type": "string",
+              "title": "CryoSPARC user email"
+            },
+            "project": {
+              "type": "string",
+              "title": "CryoSPARC project UID"
+            },
+            "workspace": {
+              "type": "string",
+              "title": "CryoSPARC workspace UID"
+            },
+            "cryosparcLane": {
+              "type": "string",
+              "title": "CryoSPARC lane"
+            },
+            "lane": {
+              "type": "string",
+              "title": "Lane"
+            },
+            "url": {
+              "type": "string",
+              "title": "CryoSPARC URL"
+            },
+            "description": {
+              "label": "Description",
+              "description": "Optional notes about this job."
+            }
+          },
+          "required": [
+            "trained_model_id",
+            "lane",
+            "output_path",
+            "gen_name",
+            "box_size",
+            "Apix"
+          ]
+        }
+      },
+      "ui": {
+        "create": {
+          "visibilityRules": {
+            "user": {
+              "when": "exportToCryoSPARC"
+            },
+            "project": {
+              "when": "exportToCryoSPARC"
+            },
+            "workspace": {
+              "when": "exportToCryoSPARC"
+            },
+            "cryosparcLane": {
+              "when": "exportToCryoSPARC"
+            },
+            "url": {
+              "when": "exportToCryoSPARC"
+            }
+          },
+          "sections": {
+            "general": [
+              "projectName",
+              "lane",
+              "activationCmd"
+            ],
+            "details": [
+              "id",
+              "title",
+              "description"
+            ],
+            "parameters": [
+              "trained_model_id",
+              "output_path",
+              "gen_name",
+              "box_size",
+              "Apix",
+              "invert"
+            ],
+            "cryoSparc": [
+              "exportToCryoSPARC",
+              "user",
+              "project",
+              "workspace",
+              "cryosparcLane",
+              "url"
+            ]
+          }
+        }
+      },
+      "command": {
+        "scriptType": "cryopros-generate",
+        "stages": [
+          {
+            "stageId": "S1_cryopros",
+            "stageKey": "GENERATE",
+            "launcherType": "slurm",
+            "steps": [
+              {
+                "key": "01_generate",
+                "execKey": "cryopros-generate",
+                "args": [
+                  {
+                    "key": "model_path",
+                    "flag": "--model_path",
+                    "from": "payload.model_path",
+                    "required": true
+                  },
+                  {
+                    "key": "param_path",
+                    "flag": "--param_path",
+                    "from": "payload.param_path",
+                    "required": true
+                  },
+                  {
+                    "key": "output_path",
+                    "flag": "--output_path",
+                    "from": "spec.output_path",
+                    "required": true
+                  },
+                  {
+                    "key": "gen_name",
+                    "flag": "--gen_name",
+                    "from": "spec.gen_name",
+                    "required": true
+                  },
+                  {
+                    "key": "box_size",
+                    "flag": "--box_size",
+                    "from": "spec.box_size",
+                    "required": true
+                  },
+                  {
+                    "key": "Apix",
+                    "flag": "--apix",
+                    "from": "spec.Apix",
+                    "required": true
+                  },
+                  {
+                    "key": "invert",
+                    "flag": "--invert",
+                    "from": "spec.invert",
+                    "required": false,
+                    "boolean": true
+                  },
+                  {
+                    "key": "gen_mode",
+                    "flag": "--gen_mode",
+                    "from": "payload.gen_mode",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "stageId": "S2_export_cryosparc",
+            "stageKey": "EXPORT_CRYOSPARC",
+            "launcherType": "bash",
+            "steps": [
+              {
+                "key": "02_export_cryosparc",
+                "execKey": "export_cryopros",
+                "args": [
+                  {
+                    "key": "generatedStarPath",
+                    "flag": "--i",
+                    "from": "payload.generatedStarPath",
+                    "required": true
+                  },
+                  {
+                    "key": "user",
+                    "flag": "--user",
+                    "from": "spec.user",
+                    "required": true
+                  },
+                  {
+                    "key": "project",
+                    "flag": "--project",
+                    "from": "spec.project",
+                    "required": true
+                  },
+                  {
+                    "key": "workspace",
+                    "flag": "--workspace",
+                    "from": "spec.workspace",
+                    "required": true
+                  },
+                  {
+                    "key": "cryosparcLane",
+                    "flag": "--lane",
+                    "from": "spec.cryosparcLane",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "createMetaSchema": {
+        "schemaId": "cryopros_generate.create-meta.v1",
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "projectName": {
+              "title": "Project",
+              "description": "Project that owns this job."
+            },
+            "id": {
+              "title": "ID",
+              "description": "Auto-generated CoJ identifier. Globally unique and used as the job folder name.",
+              "required": true,
+              "readOnly": true
+            },
+            "title": {
+              "title": "Title",
+              "description": "Defaults to the ID if left empty.",
+              "required": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
