@@ -121,6 +121,15 @@
               ],
               "title": "Dataloader batch size"
             },
+            "num_gpus": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "default": "1",
+              "title": "GPUs",
+              "description": "Number of GPUs requested for this single-node Slurm job."
+            },
             "dataloader_num_workers": {
               "type": [
                 "string",
@@ -210,6 +219,7 @@
               "Apix",
               "volume_scale",
               "dataloader_batch_size",
+              "num_gpus",
               "dataloader_num_workers",
               "gpu_ids"
             ]
@@ -473,6 +483,15 @@
               "title": "Dataloader batch size",
               "default": 6
             },
+            "num_gpus": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "default": "1",
+              "title": "GPUs",
+              "description": "Number of GPUs requested for this single-node Slurm job."
+            },
             "lane": {
               "type": "string",
               "title": "Lane",
@@ -520,7 +539,8 @@
               "Apix",
               "invert",
               "task_name",
-              "dataloader_batch_size"
+              "dataloader_batch_size",
+              "num_gpus"
             ]
           }
         }
@@ -536,6 +556,26 @@
               {
                 "key": "01_train",
                 "execKey": "cryopros-train",
+                "launcher": {
+                  "execKey": "torchrun",
+                  "args": [
+                    {
+                      "literal": "--standalone"
+                    },
+                    {
+                      "literal": "--no_python"
+                    },
+                    {
+                      "literal": "--nnodes=1"
+                    },
+                    {
+                      "literal": "--nproc_per_node"
+                    },
+                    {
+                      "env": "COCO_NPROC_PER_NODE"
+                    }
+                  ]
+                },
                 "args": [
                   {
                     "key": "init_volume_path",
@@ -710,6 +750,15 @@
               "title": "Activation command",
               "description": "Optional command recorded with the job for downstream CryoPROS scripts."
             },
+            "num_gpus": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "default": "1",
+              "title": "GPUs",
+              "description": "Number of GPUs requested for this single-node Slurm job."
+            },
             "trained_model_title": {
               "type": "string",
               "title": "Trained model title"
@@ -794,7 +843,8 @@
               "gen_name",
               "box_size",
               "Apix",
-              "invert"
+              "invert",
+              "num_gpus"
             ],
             "cryoSparc": [
               "exportToCryoSPARC",
@@ -818,6 +868,26 @@
               {
                 "key": "01_generate",
                 "execKey": "cryopros-generate",
+                "launcher": {
+                  "execKey": "torchrun",
+                  "args": [
+                    {
+                      "literal": "--standalone"
+                    },
+                    {
+                      "literal": "--no_python"
+                    },
+                    {
+                      "literal": "--nnodes=1"
+                    },
+                    {
+                      "literal": "--nproc_per_node"
+                    },
+                    {
+                      "env": "COCO_NPROC_PER_NODE"
+                    }
+                  ]
+                },
                 "args": [
                   {
                     "key": "model_path",
