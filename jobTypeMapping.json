@@ -56,15 +56,16 @@
           "properties": {
             "init_volume": {
               "type": "string",
-              "title": "Initial volume"
+              "title": "Initial reference map",
+              "description": "Path to the initial reference map (.mrc or .map) used by CryoPROS Prep."
             },
             "lowpass": {
               "type": [
                 "string",
                 "number"
               ],
-              "title": "Low-pass",
-              "description": "Low-pass value for relion_image_handler."
+              "title": "Low-pass (Å)",
+              "description": "Low-pass resolution in Å for relion_image_handler."
             },
             "isMembraneProtein": {
               "type": "boolean",
@@ -198,9 +199,9 @@
               "description"
             ],
             "parameters": [
+              "particle_id",
               "init_volume",
               "lowpass",
-              "particle_id",
               "isMembraneProtein",
               "threshold",
               "invert",
