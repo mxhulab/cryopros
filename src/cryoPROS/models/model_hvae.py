@@ -5,7 +5,7 @@ from collections import OrderedDict
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.nn.parallel import DistributedDataParallel
-from .. import logger
+from ..logger import logger
 from .network_hvae import HVAE
 from .ddp import local_rank, is_distributed, is_main_process
 

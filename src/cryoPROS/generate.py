@@ -1,6 +1,7 @@
 import argparse
 import sys
-from . import __version__, logger
+from . import __version__
+from .logger import logger
 
 def parse_argument():
     parser = argparse.ArgumentParser(description = 'Generating an auxiliary particle stack from a pre-trained conditional VAE deep neural network model.')
@@ -81,8 +82,8 @@ def parse_argument():
         '--gpu_ids',
         type = int,
         nargs = '+',
-        default = [0],
-        help = 'GPU IDs used for particle generation'
+        required = False,
+        help = 'GPU IDs used for particle generation; use CPU if not provided'
     )
 
     if len(sys.argv) == 1:
@@ -127,21 +128,19 @@ def main():
 
 
     # Load model
-    devices = []
-    if torch.cuda.is_available():
+    if args.gpu_ids is None:
+        devices = [torch.device('cpu')]
+        logger.info('No GPU IDs specified, generating particles by CPU')
+    else:
+        if not torch.cuda.is_available():
+            raise RuntimeError('GPU IDs were specified, but CUDA is not available')
         num_cuda_devices = torch.cuda.device_count()
-        valid_gpu_ids = [gpu_id for gpu_id in args.gpu_ids if 0 <= gpu_id < num_cuda_devices]
         invalid_gpu_ids = [gpu_id for gpu_id in args.gpu_ids if not 0 <= gpu_id < num_cuda_devices]
         if invalid_gpu_ids:
-            logger.warning(f'Invalid GPU(s): {invalid_gpu_ids}')
-            print(f'[Warning] Invalid GPU(s): {invalid_gpu_ids}')
-        devices = [torch.device(f'cuda:{gpu_id}') for gpu_id in valid_gpu_ids]
+            raise ValueError(f'Invalid GPU ID(s): {invalid_gpu_ids}; available GPU ID range is [0, {num_cuda_devices - 1}]')
+        devices = [torch.device(f'cuda:{gpu_id}') for gpu_id in args.gpu_ids]
         torch.cuda.empty_cache()
-    if len(devices) == 0:
-        devices = [torch.device('cpu')]
-        logger.info(f'No GPU cards available, generating particles by CPU')
-    else:
-        logger.info(f'Generating particles by GPU(s): {valid_gpu_ids}')
+        logger.info(f'Generating particles by GPU(s): {args.gpu_ids}')
 
     from .models import HVAE
     states = torch.load(args.model_path)
@@ -163,6 +162,7 @@ def main():
     slices = [slice(k * batch_size, min((k + 1) * batch_size, num_gen)) for k in range(num_iter)]
     data_scale : float = args.data_scale
     logger.info(f'Generating {num_gen} particles')
+    log_interval = max(1, min((num_iter + 4) // 5, (10000 + batch_size - 1) // batch_size))
 
     import mrcfile
     with mrcfile.new_mmap(output_dir / stack_path, (num_gen, box_size, box_size), mrc_mode = 2, overwrite = True) as mrc:
@@ -197,12 +197,14 @@ def main():
         return par_gen
 
     from concurrent.futures import ThreadPoolExecutor
-    from tqdm import tqdm
     with open(output_dir / stack_path, 'r+b') as fout:
         fout.seek(offset)
         with ThreadPoolExecutor(max_workers = len(devices), initializer = init_generate_worker) as executor:
-            for par_gen in tqdm(executor.map(generate_batch, slices), total = num_iter, desc = 'Generating particles ...'):
+            for k, par_gen in enumerate(executor.map(generate_batch, slices), start = 1):
                 par_gen.tofile(fout)
+                if k % log_interval == 0 or k == num_iter:
+                    num_done = min(k * batch_size, num_gen)
+                    logger.info(f'[{num_done}/{num_gen}] particles generated ({k}/{num_iter} batches)')
 
     logger.info('Done')
 

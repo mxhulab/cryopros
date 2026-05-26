@@ -3,7 +3,7 @@ import torch
 from collections import OrderedDict
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
-from .. import logger
+from ..logger import logger
 from .network_mp import Reconstructor
 
 class ReconModel(object):
@@ -16,7 +16,7 @@ class ReconModel(object):
     def __init__(self, opt):
         self.opt = opt
         self.save_dir = opt['path']['models']
-        self.device = torch.device('cuda' if opt['gpu_ids'] is not None else 'cpu')
+        self.device = torch.device('cuda')
         self.is_train = opt['is_train']
         self.schedulers = []
         self.model = self.define_net().to(self.device)
