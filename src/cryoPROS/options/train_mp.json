@@ -1,6 +1,5 @@
 {
   "task": "task_name",      // root/task/images-models-options
-  "gpu_ids": [0, 1, 2, 3],
   "n_channels": 1,          // broadcast to "datasets", 1 for grayscale, 3 for color
   "box_size": 256,
   "apix": 1,
@@ -34,6 +33,6 @@
     "scheduler_gamma": 0.5,
     "checkpoint_test": 5000,          // for testing
     "checkpoint_print": 200,          // for print
-    "max_iter": 20000
+    "num_epoch": 1
   }
 }

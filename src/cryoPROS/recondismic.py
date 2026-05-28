@@ -1,7 +1,8 @@
 import argparse
 import sys
 from importlib import resources
-from . import __version__, logger, options
+from . import __version__, options
+from .logger import logger
 
 def parse_argument():
     parser = argparse.ArgumentParser(description = 'Reconstructing the micelle/nanodisc density map from an input initial volume, a mask volume and raw particles with given imaging parameters.')
@@ -43,13 +44,6 @@ def parse_argument():
         '--param_path',
         required = True,
         help = 'path of star file which contains the imaging parameters'
-    )
-    parser.add_argument(
-        '--gpu_ids',
-        type = int,
-        nargs = '+',
-        default = [0],
-        help = 'GPU IDs to utilize'
     )
     parser.add_argument(
         '--invert',
@@ -97,10 +91,10 @@ def parse_argument():
         help = 'KL weight'
     )
     parser.add_argument(
-        '--max_iter',
+        '--num_epoch',
         type = int,
-        default = 30000,
-        help = 'max number of iterations'
+        default = 1,
+        help = 'number of epochs'
     )
 
     if len(sys.argv) == 1:
@@ -109,11 +103,12 @@ def parse_argument():
     return parser.parse_args()
 
 def main():
-    # Setup options, directories, logger
+    # Setup options, directories
+    args = parse_argument()
+
     import json
     from .utils import option
 
-    args = parse_argument()
     opt = option.parse(args)
     option.mkdirs(opt)
     option.save(opt)
@@ -136,7 +131,6 @@ def main():
 
     # Dataset and DataLoader
     from .dataset import ParticleDataset
-    from math import ceil
     from torch.utils.data import DataLoader
 
     for phase, dataset_opt in opt['datasets'].items():
@@ -144,25 +138,18 @@ def main():
             raise NotImplementedError(f'Phase [{phase}] is not recognized')
 
         train_set = ParticleDataset(dataset_opt)
-        train_size = int(ceil(len(train_set) / dataset_opt['dataloader_batch_size']))
-        logger.info(f'Number of train images: {len(train_set)}, iters: {train_size}')
         train_loader = DataLoader(
             train_set,
-            batch_size = dataset_opt.get('dataloader_batch_size', None),
-            shuffle = dataset_opt.get('dataloader_shuffle', None),
-            num_workers = dataset_opt.get('dataloader_num_workers', None),
+            batch_size = dataset_opt['dataloader_batch_size'],
+            shuffle = dataset_opt.get('dataloader_shuffle'),
+            num_workers = dataset_opt['dataloader_num_workers'],
             drop_last = True,
             pin_memory = True
         )
 
 
     # Initialize model
-    if torch.cuda.is_available() and opt['gpu_ids'] is not None:
-        logger.info(f'Specifies GPU ids: {opt["gpu_ids"]}')
-        num_cuda_devices = torch.cuda.device_count()
-        opt['gpu_ids'] = [gpu_id for gpu_id in opt['gpu_ids'] if 0 <= gpu_id < num_cuda_devices]
-        logger.info(f'Valid GPU ids: {opt["gpu_ids"]}')
-    if not opt['gpu_ids']:
+    if not torch.cuda.is_available():
         raise RuntimeError('Require GPU to perform cryopros-recondismic')
 
     from .models import ReconModel
@@ -175,27 +162,33 @@ def main():
     # Train
     import mrcfile
     from pathlib import Path
-    current_epoch = 0
+
     current_step = 0
-    max_iter = opt['train'].get('max_iter', 30000)
+    num_epoch = opt['train'].get('num_epoch', 1)
+    batch_size = dataset_opt['dataloader_batch_size']
+    num_batch = len(train_set) // batch_size
+    logger.info(f'Number of train images: {len(train_set)}, epoch: {num_epoch}, iterations per epoch: {num_batch}')
 
-    while True:
-        current_epoch += 1
+    checkpoint_print = max(1, min((num_batch + 4) // 5, (1000 + batch_size - 1) // batch_size))
+    if 'checkpoint_print' in opt['train']:
+        checkpoint_print = min(checkpoint_print, opt['train']['checkpoint_print'])
+    checkpoint_test = opt['train'].get('checkpoint_test', 5000)
 
-        for train_data in train_loader:
+    for i_epoch in range(num_epoch):
+        for i_batch, train_data in enumerate(train_loader):
             current_step += 1
             model.feed_data(train_data)
             model.optimize_parameters(current_step)
             model.update_learning_rate()
 
-            if current_step % opt['train'].get('checkpoint_print', 500) == 0:
+            if current_step % checkpoint_print == 0 or i_batch + 1 == num_batch:
                 logs = model.current_log()
-                message = f'<epoch:{current_epoch:3d}, iter:{current_step:8,d}, lr:{model.current_learning_rate():.3e}> '
+                message = f'[Epoch {i_epoch + 1}/{num_epoch}][Iter {i_batch + 1}/{num_batch}] step: {current_step}, lr: {model.current_learning_rate():.3e}, '
                 for k, v in logs.items():
-                    message += f'{k}: {v:.3e} '
+                    message += f'{k}: {v:.3e}, '
                 logger.info(message)
 
-            if current_step % opt['train'].get('checkpoint_test', 5000) == 0:
+            if current_step % checkpoint_test == 0:
                 model.test()
                 visuals = model.current_visuals()
 
@@ -204,12 +197,6 @@ def main():
                 with mrcfile.new(save_path, overwrite = True) as mrc:
                     mrc.set_data(volume)
                     mrc.voxel_size = opt['apix']
-
-            if current_step > max_iter:
-                break
-
-        if current_step > max_iter:
-            break
 
     logger.info('Saving the final model')
     model.save('latest')

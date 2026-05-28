@@ -1,6 +1,5 @@
 {
   "task": "task_name",
-  "gpu_ids": [0, 1, 2, 3],
   "num_gen": 10,
   "box_size": 256,
   "apix": 1,
@@ -37,7 +36,8 @@
     "KL_anneal_maxiter": 10000,
     "KL_weight": 1e-4,
     "model_weight": 0,
-    "max_iter": 30000,
+    "num_epoch": 1,
+    // "max_iter": 30000,
     "scheduler_type": "MultiStepLR",  // "MultiStepLR" is enough
     "scheduler_milestones": [20000],
     "scheduler_gamma": 0.5,

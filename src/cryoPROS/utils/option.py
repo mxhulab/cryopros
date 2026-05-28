@@ -19,7 +19,6 @@ def parse(args):
     opt['apix'] = args.apix
     opt['init_volume_path'] = args.init_volume_path
     if hasattr(args, 'mask_path'): opt['mask_path'] = args.mask_path
-    opt['gpu_ids'] = args.gpu_ids
     opt['invert'] = args.invert
     opt['opt_path'] = args.opt
     opt['task'] = args.task_name
@@ -30,7 +29,8 @@ def parse(args):
     opt['datasets']['train']['dataloader_num_workers'] = args.dataloader_num_workers
     opt['train']['optimizer_lr'] = args.lr
     if hasattr(args, 'KL_weight'): opt['train']['KL_weight'] = args.KL_weight
-    opt['train']['max_iter'] = args.max_iter
+    if hasattr(args, 'num_epoch'):
+        opt['train']['num_epoch'] = args.num_epoch
     opt['is_train'] = True
 
     # datasets
@@ -49,11 +49,6 @@ def parse(args):
     opt['path']['options'] = os.path.join(path_task, 'options')
     opt['path']['models'] = os.path.join(path_task, 'models')
     opt['path']['images'] = os.path.join(path_task, 'images')
-
-    # # GPU devices
-    # gpu_list = ','.join(str(x) for x in opt['gpu_ids'])
-    # os.environ['CUDA_VISIBLE_DEVICES'] = gpu_list
-    # print('export CUDA_VISIBLE_DEVICES=' + gpu_list)
 
     return opt
 
