@@ -137,13 +137,6 @@
               ],
               "title": "Dataloader workers"
             },
-            "gpu_ids": {
-              "type": [
-                "string",
-                "number"
-              ],
-              "title": "GPU IDs"
-            },
             "lane": {
               "type": "string",
               "title": "Lane",
@@ -346,12 +339,6 @@
                     "key": "dataloader_num_workers",
                     "flag": "--dataloader_num_workers",
                     "from": "spec.dataloader_num_workers",
-                    "required": true
-                  },
-                  {
-                    "key": "gpu_ids",
-                    "flag": "--gpu_ids",
-                    "from": "spec.gpu_ids",
                     "required": true
                   }
                 ]
