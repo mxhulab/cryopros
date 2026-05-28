@@ -740,11 +740,6 @@
               "title": "Invert",
               "default": true
             },
-            "activationCmd": {
-              "type": "string",
-              "title": "Activation command",
-              "description": "Optional command recorded with the job for downstream CryoPROS scripts."
-            },
             "num_gpus": {
               "type": [
                 "string",
@@ -829,8 +824,7 @@
           "sections": {
             "general": [
               "projectName",
-              "lane",
-              "activationCmd"
+              "lane"
             ],
             "details": [
               "id",
