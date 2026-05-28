@@ -7,7 +7,7 @@ from torch.optim.lr_scheduler import MultiStepLR
 from torch.nn.parallel import DistributedDataParallel
 from ..logger import logger
 from .network_hvae import HVAE
-from .ddp import local_rank, is_distributed, is_main_process
+from .ddp import local_rank, is_distributed, is_main_process, initialize_process_group
 
 class HVAEModel(object):
     '''Training/inference wrapper for the cryoPROS HVAE network.
@@ -39,10 +39,7 @@ class HVAEModel(object):
             raise RuntimeError('Require GPU to perform cryopros-train')
 
         if is_distributed():
-            torch.cuda.set_device(local_rank())
-            if not dist.is_initialized():
-                backend = 'nccl' if dist.is_nccl_available() else 'gloo'
-                dist.init_process_group(backend = backend, init_method = 'env://')
+            initialize_process_group()
             return torch.device(f'cuda:{local_rank()}')
 
         return torch.device('cuda')

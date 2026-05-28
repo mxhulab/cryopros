@@ -2,7 +2,7 @@ from .model_hvae import HVAEModel
 from .network_hvae import HVAE
 from .model_mp import ReconModel
 from .network_mp import Reconstructor
-from .ddp import local_rank, rank, world_size, is_distributed, is_main_process
+from .ddp import local_rank, rank, world_size, is_distributed, is_main_process, initialize_process_group
 
 __all__ = [
     'HVAEModel',
@@ -14,4 +14,5 @@ __all__ = [
     'world_size',
     'is_distributed',
     'is_main_process',
+    'initialize_process_group',
 ]

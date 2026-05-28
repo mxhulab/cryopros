@@ -128,6 +128,7 @@ def main():
 
 
     # Dataset and DataLoader
+    models.initialize_process_group()
     from .dataset import ParticleDataset
     from torch.utils.data import DataLoader
     from torch.utils.data.distributed import DistributedSampler
