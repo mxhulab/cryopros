@@ -91,6 +91,12 @@ def parse_argument():
         default = 1,
         help = 'number of epochs'
     )
+    parser.add_argument(
+        '--max_iter',
+        type = int,
+        default = None,
+        help = 'max number of iterations'
+    )
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -217,10 +223,10 @@ def main():
                             img_path = Path(opt['path']['images']) / f'{i + 1:04d}_{current_step}_G.png'
                             cv2.imwrite(str(img_path), img)
 
-                if current_step >= max_iter:
+                if max_iter is not None and current_step >= max_iter:
                     break
 
-            if current_step >= max_iter:
+            if max_iter is not None and current_step >= max_iter:
                 break
 
         if models.is_main_process():

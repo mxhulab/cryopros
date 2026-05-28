@@ -465,6 +465,22 @@
               "title": "Dataloader batch size",
               "default": 6
             },
+            "num_epoch": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Number of epochs",
+              "default": 1
+            },
+            "max_iter": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "title": "Max iterations",
+              "description": "Optional maximum number of training iterations."
+            },
             "num_gpus": {
               "type": [
                 "string",
@@ -522,6 +538,8 @@
               "invert",
               "task_name",
               "dataloader_batch_size",
+              "num_epoch",
+              "max_iter",
               "num_gpus"
             ]
           }
@@ -606,6 +624,18 @@
                     "key": "dataloader_batch_size",
                     "flag": "--dataloader_batch_size",
                     "from": "spec.dataloader_batch_size",
+                    "required": false
+                  },
+                  {
+                    "key": "num_epoch",
+                    "flag": "--num_epoch",
+                    "from": "spec.num_epoch",
+                    "required": false
+                  },
+                  {
+                    "key": "max_iter",
+                    "flag": "--max_iter",
+                    "from": "spec.max_iter",
                     "required": false
                   }
                 ]

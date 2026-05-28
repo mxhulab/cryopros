@@ -31,6 +31,8 @@ def parse(args):
     if hasattr(args, 'KL_weight'): opt['train']['KL_weight'] = args.KL_weight
     if hasattr(args, 'num_epoch'):
         opt['train']['num_epoch'] = args.num_epoch
+    if hasattr(args, 'max_iter') and args.max_iter is not None:
+        opt['train']['max_iter'] = args.max_iter
     opt['is_train'] = True
 
     # datasets
