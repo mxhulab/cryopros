@@ -2,7 +2,7 @@ import argparse
 import sys
 from importlib import resources
 from . import __version__, options
-from .logger import logger
+from .logger import configure_logging, emit_progress, logger
 
 def parse_argument():
     parser = argparse.ArgumentParser(description = 'Training a conditional VAE deep neural network model from an input initial volume and raw particles with given imaging parameters.')
@@ -103,7 +103,7 @@ def parse_argument():
         exit()
     return parser.parse_args()
 
-def main():
+def _run():
     # Setup options, directories
     args = parse_argument()
 
@@ -176,9 +176,20 @@ def main():
     num_epoch = opt['train'].get('num_epoch', 1)
     max_iter = opt['train'].get('max_iter')
     batch_size = dataset_opt['dataloader_batch_size']
-    num_batch = len(train_set) // batch_size
+    num_batch = len(train_loader)
+    total_steps = num_epoch * max(1, num_batch)
+    if max_iter is not None:
+        total_steps = min(total_steps, max(1, int(max_iter)))
     if models.is_main_process():
         logger.info(f'Number of train images: {len(train_set)}, epoch: {num_epoch}, iterations per epoch: {num_batch}')
+        emit_progress(
+            'cryopros-train',
+            'setup',
+            0,
+            total_steps,
+            'optimization-iteration',
+            metadata={'totalEpochs': num_epoch, 'iterationsPerEpoch': num_batch, 'particleCount': len(train_set)},
+        )
 
     checkpoint_print = max(1, min((num_batch + 4) // 5, (1000 + batch_size - 1) // batch_size))
     if 'checkpoint_print' in opt['train']:
@@ -204,10 +215,33 @@ def main():
                         for k, v in logs.items():
                             message += f'{k}: {v:.3e}, '
                         logger.info(message)
+                        emit_progress(
+                            'cryopros-train',
+                            'train',
+                            min(current_step, total_steps),
+                            total_steps,
+                            'optimization-iteration',
+                            metadata={
+                                'epoch': i_epoch + 1,
+                                'totalEpochs': num_epoch,
+                                'iteration': i_batch + 1,
+                                'iterationsPerEpoch': num_batch,
+                                'learningRate': model.current_learning_rate(),
+                                'metrics': logs,
+                            },
+                        )
 
                     if current_step % checkpoint_save == 0:
                         logger.info('Saving the model')
                         model.save(current_step)
+                        emit_progress(
+                            'cryopros-train',
+                            'checkpoint-saved',
+                            min(current_step, total_steps),
+                            total_steps,
+                            'optimization-iteration',
+                            checkpoint={'step': current_step},
+                        )
 
                     if current_step % checkpoint_test == 0:
                         for i in range(opt['num_gen']):
@@ -232,10 +266,27 @@ def main():
         if models.is_main_process():
             logger.info('Saving the final model')
             model.save('latest')
+            emit_progress(
+                'cryopros-train',
+                'model-saved',
+                min(current_step, total_steps),
+                total_steps,
+                'optimization-iteration',
+                checkpoint={'step': current_step, 'name': 'latest'},
+            )
             logger.info('End of training')
 
     finally:
         model.cleanup()
+
+
+def main():
+    configure_logging(source='cryopros-train')
+    try:
+        return _run()
+    except Exception:
+        logger.exception('CryoPROS training failed during distributed startup or execution')
+        raise
 
 if __name__ == '__main__':
     main()

@@ -3,7 +3,7 @@ import os
 import sys
 from dataclasses import dataclass
 from . import __version__
-from .logger import logger
+from .logger import configure_logging, emit_progress, logger
 
 
 @dataclass(frozen=True)
@@ -134,7 +134,7 @@ def parse_argument():
     return parser.parse_args()
 
 
-def main():
+def _run():
     # Preparation
     args = parse_argument()
     logger.info(f'Received arguments: {str(args)}')
@@ -145,8 +145,9 @@ def main():
     from .dataset import ParticleDataset
     from .utils import generate_uniform_pose
 
-    ctx = init_distributed(torch)
+    ctx = None
     try:
+        ctx = init_distributed(torch)
         output_dir = Path(args.output_path)
         if ctx.is_main:
             output_dir.mkdir(parents = True, exist_ok = True)
@@ -246,6 +247,15 @@ def main():
                         write_offset += len(par_gen)
                         if k % log_interval == 0 or k == len(local_slices):
                             logger.info(f'[rank {ctx.rank}] generated particles {local_start + write_offset}/{num_gen}')
+                            if ctx.is_main:
+                                emit_progress(
+                                    'cryopros-generate',
+                                    'generate',
+                                    local_start + write_offset,
+                                    num_gen,
+                                    'particle',
+                                    metadata={'batch': k, 'rank': ctx.rank, 'worldSize': ctx.world_size},
+                                )
             else:
                 logger.info(f'[rank {ctx.rank}] no particles assigned')
             barrier(ctx)
@@ -292,11 +302,36 @@ def main():
                         if k % log_interval == 0 or k == num_iter:
                             num_done = min(k * batch_size, num_gen)
                             logger.info(f'[{num_done}/{num_gen}] particles generated ({k}/{num_iter} batches)')
+                            emit_progress(
+                                'cryopros-generate',
+                                'generate',
+                                num_done,
+                                num_gen,
+                                'particle',
+                                metadata={'batch': k, 'totalBatches': num_iter},
+                            )
 
         if ctx.is_main:
+            emit_progress(
+                'cryopros-generate',
+                'output-written',
+                num_gen,
+                num_gen,
+                'particle',
+                metadata={'outputPath': str(output_dir / stack_path)},
+            )
             logger.info('Done')
+    except Exception:
+        logger.exception('CryoPROS generation failed during distributed startup or execution')
+        raise
     finally:
-        destroy_distributed()
+        if ctx is not None:
+            destroy_distributed()
+
+
+def main():
+    configure_logging(source='cryopros-generate')
+    return _run()
 
 
 if __name__ == '__main__':

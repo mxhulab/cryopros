@@ -1,25 +1,12 @@
 import argparse
-import logging
 import os
-import sys
 from random import uniform
 from time import sleep
 from pathlib import Path
 from typing import Optional
+from cryoPROS.logger import configure_logging
 
-
-def configure_logging():
-    log_path = os.environ.get('COCO_JOB_LOG')
-    if log_path:
-        Path(log_path).parent.mkdir(parents = True, exist_ok = True)
-        handlers = [logging.FileHandler(log_path, mode = 'a', encoding = 'utf-8')]
-    else:
-        handlers = [logging.StreamHandler(sys.stderr)]
-    logging.basicConfig(level = logging.INFO, format = '[%(asctime)s][%(levelname)s] %(message)s', datefmt = r'%Y-%m-%d %H:%M:%S', handlers = handlers)
-
-
-configure_logging()
-logger = logging.getLogger('CoCo')
+logger = configure_logging(source='cryopros-export')
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description = 'CoCo: Export CryoPROS-generated particles to CryoSPARC and initiate 2D classification')
