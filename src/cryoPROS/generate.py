@@ -219,6 +219,15 @@ def _run():
         data_scale : float = args.data_scale
         logger.info(f'Generating {num_gen} particles')
         log_interval = max(1, min((num_iter + 4) // 5, (10000 + batch_size - 1) // batch_size))
+        if ctx.is_main:
+            emit_progress(
+                'cryopros-generate',
+                'setup',
+                0,
+                num_gen,
+                'particle',
+                metadata={'batch': 0, 'totalBatches': num_iter, 'worldSize': ctx.world_size},
+            )
 
         def generate_batch(model, device, slc):
             ctf = ctfs[slc].to(device)
