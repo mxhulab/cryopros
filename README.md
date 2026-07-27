@@ -30,7 +30,7 @@ CryoPROS is free software developed in Python and is available as a Python packa
 - tqdm>=4.59
 - numpy>=1.21.5
 - pandas>=1.3.2
-- opencv-python
+- Pillow
 - matplotlib
 
 ## Preparation of CUDA Environment

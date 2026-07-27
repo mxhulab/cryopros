@@ -169,7 +169,7 @@ def _run():
 
 
     # Train
-    import cv2
+    from PIL import Image
     from pathlib import Path
 
     current_step = 0
@@ -255,7 +255,7 @@ def _run():
                             assert img.ndim == 2
 
                             img_path = Path(opt['path']['images']) / f'{i + 1:04d}_{current_step}_G.png'
-                            cv2.imwrite(str(img_path), img)
+                            Image.fromarray(img).save(img_path, format='PNG')
 
                 if max_iter is not None and current_step >= max_iter:
                     break
