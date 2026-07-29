@@ -3,9 +3,8 @@
 ## Layout and commands
 
 This repository uses a standard `src` layout. Packaging metadata is in the root
-`pyproject.toml`, Python sources are under `src/cryoPROS/`, integration helpers
-are under `scripts/`, and the module contract consumed by CoCo is
-`module.yaml`.
+`pyproject.toml`, Python sources are under `src/cryoPROS/`, and the module
+contract consumed by CoCo is `module.yaml`.
 
 Python `>=3.9` is required. Run commands from the repository root:
 
@@ -13,7 +12,7 @@ Python `>=3.9` is required. Run commands from the repository root:
 python -m pip install -e .
 python -m pip install build
 python -m build
-python -m compileall src/cryoPROS scripts
+python -m compileall src/cryoPROS
 cryopros-genmask -h
 cryopros-recondismic -h
 cryopros-train -h
@@ -35,8 +34,8 @@ external co-refinement with updated poses/volumes.
 Console scripts map to `cryoPROS.genmask`, `cryoPROS.recondismic`,
 `cryoPROS.train`, and `cryoPROS.generate`. Keep these entry points and the
 commands declared by `module.yaml` stable because CoCo generates stage scripts
-against them. `scripts/export_cryopros.py` is a parent integration resource and
-must remain compatible with its module manifest declaration.
+against them. CryoSPARC particle export is owned by CoCo core and must not be
+declared or implemented as a CryoPROS module command or resource.
 
 Outputs are relative to the job/process working directory. Preserve stable
 option snapshots, log names, model/volume paths, preview images, generated MRC
