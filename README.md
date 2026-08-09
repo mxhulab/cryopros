@@ -1,3 +1,11 @@
+> [!IMPORTANT]
+> ### CryoPROS is now part of the [CoCo Project](https://www.cocoproject.org.cn/)
+> [![CoCo Project: cryo-EM copilot](cocoproject.png)](https://www.cocoproject.org.cn/)
+>
+> CoCo is a user-friendly GUI platform that weaves CryoPROS and other analysis modules directly into your cryo-EM workflow.
+>
+> [Explore CoCo and get started](https://www.cocoproject.org.cn/)
+
 ![banner](banner.png)
 
 # CryoPROS: Correcting Misalignment Caused by Preferred Orientation Using AI-generated Auxiliary Particles.
