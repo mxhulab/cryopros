@@ -12,20 +12,10 @@ provides:
     - cryopros-recondismic
     - cryopros-train
     - cryopros-generate
-    - export_cryopros
   capabilities:
     - particle-set.consumer
     - particle-prior.trainer
     - particle-selection.producer
-requires:
-  external:
-    - relion
-  optional:
-    - cryosparc
-resources:
-  jobTypeMapping: jobTypeMapping.json
-  scripts:
-    - scripts/export_cryopros.py
 lineage:
   consumes:
     - capability: particle-set.producer
